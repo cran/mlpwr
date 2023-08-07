@@ -17,12 +17,17 @@ find.design(
   surrogate = NULL,
   n.startsets = 4,
   init.perc = 0.2,
-  setsize = 100,
+  setsize = NULL,
   continue = NULL,
   dat = NULL,
   silent = FALSE,
   autosave_dir = NULL,
-  control = list()
+  control = list(),
+  goodvals = "high",
+  aggregate_fun = mean,
+  noise_fun = "bernoulli",
+  integer = TRUE,
+  use_noise = TRUE
 )
 }
 \arguments{
@@ -32,7 +37,7 @@ find.design(
 
 \item{power}{numeric; desired statistical power}
 
-\item{evaluations}{integer; number of dgf evaluations to be performed before termination}
+\item{evaluations}{integer; number of simfun evaluations to be performed before termination}
 
 \item{ci}{numeric; desired width of the confidence interval at the predicted value on termination.}
 
@@ -61,6 +66,16 @@ find.design(
 \item{autosave_dir}{character; file location for saving the dat object after each update.}
 
 \item{control}{list specifying arguments passed to the surrogate models. For example, list(covtype='gauss') can be used with the gpr surrogate to use a different covariance structure than the default.}
+
+\item{goodvals}{character indicating whether higher or lower criterion values are preferable given equal cost; the default is "high" for statistical power, the other option is "low".}
+
+\item{aggregate_fun}{function to aggregate results of the evaluations of the simulation function; the default is \code{mean}, as for statistical power.}
+
+\item{noise_fun}{function to calculate the noise or variance of the aggregated results of the Monte Carlo evaluations; can also be the character value "bernoulli" (default) to indicate the variance of the Bernoulli distribution used for statistical power. This function is \eqn{p(1-p)/n}, where \eqn{p} is the statistical power and \eqn{n} is the number of performed evaluations.}
+
+\item{integer}{logical  indicating whether the design parameters are integers or not; the default is \code{TRUE}, which is suitable for sample size, for example.}
+
+\item{use_noise}{logical indicating whether noise variance should be used; the default is \code{TRUE}.}
 }
 \value{
 function returns an object of class designresult
@@ -70,19 +85,22 @@ Perform a surrogate modeling approach to search for optimal study design paramet
 }
 \examples{
 \donttest{
-#Load a simulation function
-simfun = example.simfun('ttest')
+## T-test example:
+
+# Load a simulation function
+simfun <- example.simfun('ttest')
 # Perform the search
-ds = find.design(simfun = simfun, boundaries = c(100,300), power = .95)
+ds <- find.design(simfun = simfun, boundaries = c(100,300), power = .95)
 # Output the results
 summary(ds)
 # Plot results
 plot(ds)
 
-# Two-dimensional simulation function:
-simfun = example.simfun('anova')
+## Two-dimensional simulation function:
+
+simfun <- example.simfun('anova')
 # Perform the search
-res = find.design(simfun = simfun,
+ds <- find.design(simfun = simfun,
  costfun = function(n,n.groups) 5*n+20*n.groups,
  boundaries = list(n = c(10, 150), n.groups = c(5, 30)),
  power = .95)
@@ -90,5 +108,43 @@ res = find.design(simfun = simfun,
 summary(ds)
 # Plot results
 plot(ds)
+
+
+##  Mixed model example with a custom, two-dimensional simulation function:
+
+library(lme4)
+library(lmerTest)
+
+# Simulation function
+simfun_multilevel <- function(n.per.school,n.schools) {
+
+  # generate data
+  group = rep(1:n.schools,each=n.per.school)
+  pred = factor(rep(c("old","new"),n.per.school*n.schools),levels=c("old","new"))
+  dat = data.frame(group = group, pred = pred)
+
+  params <- list(theta = c(.5,0,.5), beta = c(0,1),sigma = 1.5)
+  names(params$theta) = c("group.(Intercept)","group.prednew.(Intercept)","group.prednew")
+  names(params$beta) = c("(Intercept)","prednew")
+  dat$y <- simulate.formula(~pred + (1 + pred | group), newdata = dat, newparams = params)[[1]]
+
+  # test hypothesis
+  mod <- lmer(y ~ pred + (1 + pred | group), data = dat)
+  pvalue <- summary(mod)[["coefficients"]][2,"Pr(>|t|)"]
+  pvalue < .01
+}
+# Cost function
+costfun_multilevel <- function(n.per.school, n.schools) {
+  100 * n.per.school + 200 * n.schools
+}
+# Perform the search, can take a few minutes to run
+ds <- find.design(simfun = simfun_multilevel, costfun = costfun_multilevel,
+boundaries = list(n.per.school = c(5, 25), n.schools = c(10, 30)), power = .95,
+evaluations = 1000)
+# Output the results
+summary(ds)
+# Plot results
+plot(ds)
+
 }
 }

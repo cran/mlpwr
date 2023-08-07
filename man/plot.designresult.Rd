@@ -11,6 +11,8 @@
   addribbon = NULL,
   trim = TRUE,
   type = "heat",
+  color.width = 0.15,
+  color.gradient = "diverging",
   ...
 )
 }
@@ -26,6 +28,10 @@
 \item{trim}{logical. Option to trim the plotting area for the 2D line plot. The trimmed area is the area where the line is plotted. Default is TRUE.}
 
 \item{type}{character indicating the type of the 2D plot. Can be 'heat'(default) or 'line'.}
+
+\item{color.width}{numeric. Option for the diverging colormap in the 2D plot. Width of the blue-white colorband.}
+
+\item{color.gradient}{character indicating whether the 2D plot should have a "diverging" color gradient (white-blue-white, default) or a "linear" color gradient (blue-red)}
 
 \item{...}{additional arguments to be passed.}
 }

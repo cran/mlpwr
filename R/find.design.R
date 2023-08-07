@@ -6,7 +6,7 @@
 #' @param simfun function to generate hypothesis test results with. Takes design parameters as input and outputs a logical (result of the hypothesis test). The function can take the designs through one argument as a vector or through multiple arguments. For example, function(x) where x is later used with x=c(n,k) for two design parameters n and k is valid. Also valid is a definition using function(n,k).
 #' @param boundaries list containing lower and upper bounds of the design space. The list should consist of named vectors, each containing the upper and lower bound for the respective design parameter dimensions. For one design parameter dimension, can also be a vector containing the upper and lower bounds.
 #' @param power numeric; desired statistical power
-#' @param evaluations integer; number of dgf evaluations to be performed before termination
+#' @param evaluations integer; number of simfun evaluations to be performed before termination
 #' @param ci numeric; desired width of the confidence interval at the predicted value on termination.
 #' @param ci_perc numeric; specifying the desired confidence interval, e.g. 95% or 99%.
 #' @param time integer; seconds until termination
@@ -21,24 +21,37 @@
 #' @param autosave_dir character; file location for saving the dat object after each update.
 #' @param control list specifying arguments passed to the surrogate models. For example, list(covtype='gauss') can be used with the gpr surrogate to use a different covariance structure than the default.
 #' @param continue Object of class designresult as created by the find.design function. Will be used to continue the search, using all collected simulation results so far.
+#' @param goodvals character to indicate whether higher or lower criterion values are preferable given equal cost. For statistical power, higher values are better, so its "high", otherwise "low".
+#' @param aggregate_fun function to aggregate results of the evaluations of the simulation function. The default is mean as for statistical power.
+#' @param noise_fun function to calculate the noise or variance of the aggregated results of the Monte Carlo evaluations. Can also be the character "bernoulli" (default) to indicate the variance of the bernoulli distribution used for statistical power. This function is \eqn{p(1-p)/n} with \eqn{p} being the statistical power and \eqn{n} being the number of performed evaluations.
+#' @param integer logical to indicate whether the design paramaters are integers or not. The default is "TRUE" which is suitable for example for sample size.
+#' @param use_noise logical to indicate whether noise variance should be used. The default is TRUE.
+#' @param goodvals character indicating whether higher or lower criterion values are preferable given equal cost; the default is "high" for statistical power, the other option is "low".
+#' @param aggregate_fun function to aggregate results of the evaluations of the simulation function; the default is `mean`, as for statistical power.
+#' @param noise_fun function to calculate the noise or variance of the aggregated results of the Monte Carlo evaluations; can also be the character value "bernoulli" (default) to indicate the variance of the Bernoulli distribution used for statistical power. This function is \eqn{p(1-p)/n}, where \eqn{p} is the statistical power and \eqn{n} is the number of performed evaluations.
+#' @param integer logical  indicating whether the design parameters are integers or not; the default is `TRUE`, which is suitable for sample size, for example.
+#' @param use_noise logical indicating whether noise variance should be used; the default is `TRUE`.
 #'
 #' @return function returns an object of class designresult
 #' @export
 #'
 #' @examples \donttest{
-#' #Load a simulation function
-#' simfun = example.simfun('ttest')
+#' ## T-test example:
+#'
+#' # Load a simulation function
+#' simfun <- example.simfun('ttest')
 #' # Perform the search
-#' ds = find.design(simfun = simfun, boundaries = c(100,300), power = .95)
+#' ds <- find.design(simfun = simfun, boundaries = c(100,300), power = .95)
 #' # Output the results
 #' summary(ds)
 #' # Plot results
 #' plot(ds)
 #'
-#' # Two-dimensional simulation function:
-#' simfun = example.simfun('anova')
+#' ## Two-dimensional simulation function:
+#'
+#' simfun <- example.simfun('anova')
 #' # Perform the search
-#' res = find.design(simfun = simfun,
+#' ds <- find.design(simfun = simfun,
 #'  costfun = function(n,n.groups) 5*n+20*n.groups,
 #'  boundaries = list(n = c(10, 150), n.groups = c(5, 30)),
 #'  power = .95)
@@ -46,13 +59,51 @@
 #' summary(ds)
 #' # Plot results
 #' plot(ds)
+#'
+#'
+#' ##  Mixed model example with a custom, two-dimensional simulation function:
+#'
+#' library(lme4)
+#' library(lmerTest)
+#'
+#' # Simulation function
+#' simfun_multilevel <- function(n.per.school,n.schools) {
+#'
+#'   # generate data
+#'   group = rep(1:n.schools,each=n.per.school)
+#'   pred = factor(rep(c("old","new"),n.per.school*n.schools),levels=c("old","new"))
+#'   dat = data.frame(group = group, pred = pred)
+#'
+#'   params <- list(theta = c(.5,0,.5), beta = c(0,1),sigma = 1.5)
+#'   names(params$theta) = c("group.(Intercept)","group.prednew.(Intercept)","group.prednew")
+#'   names(params$beta) = c("(Intercept)","prednew")
+#'   dat$y <- simulate.formula(~pred + (1 + pred | group), newdata = dat, newparams = params)[[1]]
+#'
+#'   # test hypothesis
+#'   mod <- lmer(y ~ pred + (1 + pred | group), data = dat)
+#'   pvalue <- summary(mod)[["coefficients"]][2,"Pr(>|t|)"]
+#'   pvalue < .01
+#' }
+#' # Cost function
+#' costfun_multilevel <- function(n.per.school, n.schools) {
+#'   100 * n.per.school + 200 * n.schools
+#' }
+#' # Perform the search, can take a few minutes to run
+#' ds <- find.design(simfun = simfun_multilevel, costfun = costfun_multilevel,
+#' boundaries = list(n.per.school = c(5, 25), n.schools = c(10, 30)), power = .95,
+#' evaluations = 1000)
+#' # Output the results
+#' summary(ds)
+#' # Plot results
+#' plot(ds)
+#'
 #'}
 find.design <- function(simfun, boundaries, power = NULL,
     evaluations = 4000, ci = NULL, ci_perc = 0.95,
     time = NULL, costfun = NULL, cost = NULL, surrogate = NULL,
-    n.startsets = 4, init.perc = 0.2, setsize = 100,
+    n.startsets = 4, init.perc = 0.2, setsize = NULL,
     continue = NULL, dat = NULL, silent = FALSE, autosave_dir = NULL,
-    control = list()) {
+    control = list(),goodvals="high",aggregate_fun = mean,noise_fun = "bernoulli",integer=TRUE,use_noise=TRUE) {
 
     # save seed for reproducibility
     seed <- .Random.seed
@@ -75,10 +126,8 @@ find.design <- function(simfun, boundaries, power = NULL,
             continue$surrogate)
     }
 
-    # set a default costfunction (identity) if
-    # not specified
-    if (is.null(costfun))
-        costfun <- function(x) sum(x)
+    # set a default costfunction (identity) if not specified
+    if (is.null(costfun)) costfun <- function(x) sum(x)
 
     # convert boundaries to list and set name
     # from simfun
@@ -92,7 +141,7 @@ find.design <- function(simfun, boundaries, power = NULL,
 
     # Set setsize according to a percentage of
     # evaluations, if available
-    if (!is.null(evaluations))
+    if (is.null(setsize) & !is.null(evaluations))
         setsize <- ceiling(evaluations * init.perc/n.points)
 
     # adjust number of evaluations for continuing
@@ -109,7 +158,7 @@ find.design <- function(simfun, boundaries, power = NULL,
     # available
     if (is.null(dat)) {
         points <- initpoints(boundaries = boundaries,
-            n.points = n.points)
+            n.points = n.points, integer=integer)
         dat <- addval(simfun = simfun, points = points,
             each = setsize, autosave_dir = autosave_dir)
     }
@@ -125,7 +174,7 @@ find.design <- function(simfun, boundaries, power = NULL,
     # warn if ci is termination critrerion
     # without gpr surrogate
     if (!is.null(ci) && surrogate != "gpr")
-        warning("Additionally fitting a GPR each update for calculating the SE. Consider switchting to GPR to speed up the estimation")
+        message("Additionally fitting a GPR each update for calculating the SE. Consider switchting to GPR to speed up the estimation")
 
 
 
@@ -154,7 +203,7 @@ find.design <- function(simfun, boundaries, power = NULL,
           lastfit <- NULL
         }
         fit <- fit.surrogate(dat = dat, surrogate = surrogate,
-            lastfit = lastfit, control = control)
+            lastfit = lastfit, control = control, aggregate_fun = aggregate_fun, use_noise = use_noise,noise_fun=noise_fun)
 
         # count bad fits (e.g. plane fitted)
         if (fit$badfit)
@@ -165,7 +214,7 @@ find.design <- function(simfun, boundaries, power = NULL,
         # fitted model
         pred <- get.pred(fit = fit, dat = dat, power = power,
             costfun = costfun, cost = cost, boundaries = boundaries,
-            task = task)
+            task = task,aggregate_fun = aggregate_fun,integer=integer,use_noise=use_noise)
 
         # count bad predictions (no sensible
         # value found)
@@ -210,22 +259,39 @@ find.design <- function(simfun, boundaries, power = NULL,
     # move to next line
     cat("\n")
 
-    # Optional for the final output: Generate SD
-    # from a GP if using a different surrogate
-    if (is.null(fit$fitfun.sd))
-        fit$fitfun.sd <- fit.surrogate(dat = dat, surrogate = "gpr")$fitfun.sd
-
-    # Stop the clock
-    time_used <- timer(time_temp)
-
-    # Warning if ending with a bad prediction
+      # Warning if ending with a bad prediction
     if (pred$badprediction | fit$badfit) {
         pred$points <- pred$bad.points
         warning("No good design found after the final update.")
     }
 
-    final <- list(design = pred$points, power = fit$fitfun(as.numeric(pred$points)),
-        cost = costfun(as.numeric(pred$points)), se = fit$fitfun.sd(as.numeric(pred$points)))
+    # bad prediction and no edge result -> no specific result to report
+    noresult = pred$badprediction & !pred$edgeprediction
+
+    # calculate final power and cost
+    if(!noresult) {
+      power_final = fit$fitfun(as.numeric(pred$points))
+      cost_final = costfun(as.numeric(pred$points))
+    } else {
+      power_final = NA
+      cost_final = NA
+    }
+
+    # Optional for the final output: Generate SD
+    # from a GP if using a different surrogate
+    if (!noresult && use_noise && is.null(fit$fitfun.sd))
+        fit$fitfun.sd <- fit.surrogate(dat = dat, surrogate = "gpr",aggregate_fun = aggregate_fun,use_noise = use_noise, noise_fun=noise_fun)$fitfun.sd
+
+    # calculate final SE
+    if (!noresult & use_noise) final_se = fit$fitfun.sd(as.numeric(pred$points))
+    else final_se = NA
+
+    # Stop the clock
+    time_used <- timer(time_temp)
+
+    final <- list(design = pred$points, power = power_final,
+        cost = cost_final, se = final_se)
+
     names(final$design) <- names(boundaries)
 
     # Collect Results
@@ -236,7 +302,7 @@ find.design <- function(simfun, boundaries, power = NULL,
             n.bad.predictions, 0), n.bad.fits = ifelse(exists("n.bad.fits"),
             n.bad.fits, 0), call = match.call(), seed = seed,
         costfun = costfun, boundaries = boundaries,
-        simfun = simfun, cost = cost, power = power)
+        simfun = simfun, cost = cost, power = power,aggregate_fun=aggregate_fun)
 
     class(re) <- "designresult"
 

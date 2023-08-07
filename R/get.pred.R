@@ -1,8 +1,8 @@
 
 get.pred <- function(fit, dat, power, costfun, cost,
-    boundaries, task) {
+    boundaries, task,aggregate_fun,integer,use_noise) {
 
-    datx <- todataframe(dat, aggregate = TRUE)
+    datx <- todataframe(dat, aggregate = TRUE, aggregate_fun = aggregate_fun )
     xvars <- datx[, 1:(length(datx) - 1), drop = FALSE]
     # 3 most promising previous candidates
     freqs <- sapply(dat, function(x) length(x$y))
@@ -23,18 +23,21 @@ get.pred <- function(fit, dat, power, costfun, cost,
             fit$fitfun.sd(x) * greediness/10) * 10^5 +
             costfun(x)/costfun(midpars)
 
-        if (is.null(fit$fitfun.sd))
+        if (!use_noise | is.null(fit$fitfun.sd))
             fn <- function(x) relu(power - fit$fitfun(x)) *
                 10^5 + costfun(x)/costfun(midpars)
 
-        newre <- rgenoud::genoud(fn, nvars = nrow(Domains),
-            data.type.int = TRUE, Domains = Domains,
+        if(integer) newre <- rgenoud::genoud(fn, nvars = nrow(Domains),
+            data.type.int = integer, Domains = Domains,
             print.level = 0, boundary.enforcement = 1,
             pop.size = 20, starting.values = cands)
 
+        if(!integer)
+          newre <- rgenoud::genoud(fn, nvars = nrow(Domains), data.type.int = integer, Domains = Domains, print.level = 0, boundary.enforcement = 2,pop.size = 20, starting.values = cands,gradient.check=F)
 
-        badprediction <- abs(fit$fitfun(newre$par) -
-            power) > 0.05
+          badprediction <- abs(fit$fitfun(newre$par) -
+            power) > 0.4
+
     }
 
 
@@ -44,7 +47,7 @@ get.pred <- function(fit, dat, power, costfun, cost,
             10^5 - fit$fitfun(x)
 
         newre <- rgenoud::genoud(fn, nvars = nrow(Domains),
-            data.type.int = TRUE, Domains = Domains,
+            data.type.int = integer, Domains = Domains,
             print.level = 0, boundary.enforcement = 1,
             pop.size = 20, starting.values = cands)
 
