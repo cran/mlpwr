@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marc Egli" />
+
+
+<title>t-test Application</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">t-test Application</h1>
+<h4 class="author">Marc Egli</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#t-test-vignette" id="toc-t-test-vignette">T-Test
+Vignette</a>
+<ul>
+<li><a href="#introduction-to-mlpwr" id="toc-introduction-to-mlpwr">Introduction to mlpwr</a></li>
+<li><a href="#introduction-to-two-sample-t-test" id="toc-introduction-to-two-sample-t-test">Introduction to Two-Sample
+t-test</a>
+<ul>
+<li><a href="#assumptions" id="toc-assumptions">Assumptions</a></li>
+</ul></li>
+<li><a href="#welchs-t-test" id="toc-welchs-t-test">Welch’s t-test</a>
+<ul>
+<li><a href="#formula" id="toc-formula">Formula</a></li>
+<li><a href="#performing-welchs-t-test-in-r" id="toc-performing-welchs-t-test-in-r">Performing Welch’s T-Test in
+R</a></li>
+<li><a href="#scenario" id="toc-scenario">Scenario</a></li>
+</ul></li>
+<li><a href="#power-analysis" id="toc-power-analysis">Power Analysis</a>
+<ul>
+<li><a href="#data-preparation" id="toc-data-preparation">Data
+Preparation</a></li>
+<li><a href="#cost-function" id="toc-cost-function">Cost
+function</a></li>
+<li><a href="#power-analysis-1" id="toc-power-analysis-1">Power
+Analysis</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="t-test-vignette" class="section level1">
+<h1>T-Test Vignette</h1>
+<div id="introduction-to-mlpwr" class="section level2">
+<h2>Introduction to mlpwr</h2>
+<p>The <code>mlpwr</code> package is a powerful tool for comprehensive
+power analysis and design optimization in research. It addresses
+challenges in optimizing study designs for power across multiple
+dimensions while considering cost constraints. By combining Monte Carlo
+simulations, surrogate modeling techniques, and cost functions,
+<code>mlpwr</code> enables researchers to model the relationship between
+design parameters and statistical power, allowing for efficient
+exploration of the parameter space.</p>
+<p>Using Monte Carlo simulation, <code>mlpwr</code> estimates
+statistical power across different design configurations by generating
+simulated datasets and performing hypothesis tests on these. A surrogate
+model, such as linear regression, logistic regression, support vector
+regression (SVR), or Gaussian process regression, is then fitted to
+approximate the power function. This facilitates the identification of
+optimal design parameter values.</p>
+<p>The <code>mlpwr</code> package offers two primary types of outputs
+based on specified goals and constraints. Researchers can obtain study
+design parameters that yield the desired power level at the lowest
+possible cost, taking budget limitations and resource availability into
+account. Alternatively, researchers can identify design parameters that
+maximize power within a given cost threshold, enabling informed resource
+allocation.</p>
+<p>In conclusion, the <code>mlpwr</code> package provides a
+comprehensive and flexible tool for power analysis and design
+optimization. It guides users through the process of optimizing study
+designs, enhancing statistical power, and making informed decisions
+within their research context.</p>
+<p>For more details, refer to <a href="https://doi.org/10.1037/met0000611">Zimmer &amp; Debelak
+(2023)</a>.</p>
+<p>In this Vignette we will apply the <code>mlpwr</code> package to a
+t-test setting.</p>
+</div>
+<div id="introduction-to-two-sample-t-test" class="section level2">
+<h2>Introduction to Two-Sample t-test</h2>
+<p>The two-sample t-test is a statistical test used to determine whether
+there is a significant difference between the means of two independent
+groups. It is commonly employed when comparing the means of two
+different treatments, groups, or populations.</p>
+<div id="assumptions" class="section level3">
+<h3>Assumptions</h3>
+<p>Before conducting a two-sample t-test, certain assumptions should be
+met:</p>
+<ol style="list-style-type: decimal">
+<li>Independence: The observations within each group must be independent
+of each other.</li>
+<li>Normality: The data within each group should be approximately
+normally distributed. However, the t-test is known to be robust to
+deviations from normality, especially when the sample sizes are
+large.</li>
+<li>Homogeneity of variances: The variances of the two groups should be
+approximately equal. If this assumption is violated a Welch’s t-test
+should be conducted instead of a standard student’s t-test. Performing a
+Welch’s test instead of a standard student’s test is standard
+practice.</li>
+</ol>
+<p>For further resources on the assumptions consult <a href="https://doi.org/10.4097%2Fkja.d.18.00292">Kim &amp; Park,
+(2019)</a></p>
+<p>We will use the Welch’s t-test instead of the original student’s
+t-test for our analysis, which is standard practice and also the default
+in R’s <code>t.test</code>.</p>
+</div>
+</div>
+<div id="welchs-t-test" class="section level2">
+<h2>Welch’s t-test</h2>
+<p>Welch’s t-test is a modification of the two-sample t-test that
+relaxes the assumption of equal variances between the two groups. It is
+particularly useful when the variances of the two groups are
+unequal.</p>
+<div id="formula" class="section level3">
+<h3>Formula</h3>
+<p>The formula for calculating the test statistic (t-value) in Welch’s
+t-test is as follows:</p>
+<p><span class="math display">\[
+t = \frac{{\bar{x}_1 - \bar{x}_2}}{{\sqrt{\frac{{s_1^2}}{{n_1}} +
+\frac{{s_2^2}}{{n_2}}}}}
+\]</span></p>
+<p>where - <span class="math inline">\(\bar{x}_1\)</span> and <span class="math inline">\(\bar{x}_2\)</span> are the sample means of Group A
+and Group B, respectively. - <span class="math inline">\(s_1\)</span>
+and <span class="math inline">\(s_2\)</span> are the corrected sample
+standard deviations of Group A and Group B, respectively. - <span class="math inline">\(n_1\)</span> and <span class="math inline">\(n_2\)</span> are the sample sizes of Group A and
+Group B, respectively.</p>
+<p>The degrees of freedom (<span class="math inline">\(df\)</span>) for
+Welch’s t-test are calculated using the following formula:</p>
+<p><span class="math display">\[
+df = \frac{{\left(\frac{{s_1^2}}{{n_1}} +
+\frac{{s_2^2}}{{n_2}}\right)^2}}{{\frac{{\left(\frac{{s_1^2}}{{n_1}}\right)^2}}{{n_1
+- 1}} + \frac{{\left(\frac{{s_2^2}}{{n_2}}\right)^2}}{{n_2 - 1}}}}
+\]</span></p>
+<p>where - <span class="math inline">\(s_1^2\)</span> and <span class="math inline">\(s_2^2\)</span> are the sample variances of Group A
+and Group B, respectively. - <span class="math inline">\(n_1\)</span>
+and <span class="math inline">\(n_2\)</span> are the sample sizes of
+Group A and Group B, respectively.</p>
+</div>
+<div id="performing-welchs-t-test-in-r" class="section level3">
+<h3>Performing Welch’s T-Test in R</h3>
+<p>In R, you can perform Welch’s t-test using the <code>t.test()</code>
+function with the argument <code>var.equal = FALSE</code>, which
+explicitly indicates that the variances are not assumed to be equal.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Example code for performing Welch&#39;s t-test in R</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">t.test</span>(group_a, group_b, <span class="at">var.equal =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+</div>
+<div id="scenario" class="section level3">
+<h3>Scenario</h3>
+<p>Let’s consider an example to illustrate the use of the two-sample
+t-test. Suppose a pharmaceutical company is developing a new drug to
+reduce blood pressure. They conduct a study to compare the effectiveness
+of the new drug (Group A) to an existing drug on the market (Group B) in
+reducing blood pressure. The company wants to determine if there is a
+significant difference in the mean reduction of blood pressure between
+the two drugs.</p>
+<p>A corresponding dataset would look like this:</p>
+<pre><code>##    blood_pressure group
+## 1       4.7628552     A
+## 2       0.8376327     A
+## 3       7.0838612     A
+## 4       8.2483727     A
+## 5       0.2753640     A
+## 6       5.7817489     B
+## 7       6.5854541     B
+## 8       6.3229058     B
+## 9       7.4522399     B
+## 10      7.6384407     B</code></pre>
+<p>We could conduct a t-test like this:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">t.test</span>(dat[dat<span class="sc">$</span>group<span class="sc">==</span><span class="st">&quot;A&quot;</span>,]<span class="sc">$</span>blood_pressure, dat[dat<span class="sc">$</span>group<span class="sc">==</span><span class="st">&quot;B&quot;</span>,]<span class="sc">$</span>blood_pressure, </span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>       <span class="at">alternative =</span> <span class="st">&quot;less&quot;</span>, <span class="at">var.equal =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  dat[dat$group == &quot;A&quot;, ]$blood_pressure and dat[dat$group == &quot;B&quot;, ]$blood_pressure
+## t = -1.5282, df = 4.3749, p-value = 0.09758
+## alternative hypothesis: true difference in means is less than 0
+## 95 percent confidence interval:
+##       -Inf 0.9087416
+## sample estimates:
+## mean of x mean of y 
+##  4.241617  6.756158</code></pre>
+<p>We have conducted a one-sided t-test
+(<code>alternative = &quot;less&quot;</code>), as we assumed that the drug would
+be effective and lessen the blood pressure. We also assumed non-equal
+variances between the groups (<code>var.equal=FALSE</code>) and used a
+Welch’s t-test. If we take a Type-I error of <code>alpha = 0.01</code>
+our t-test is not significant, based on the p-value being greater than
+0.01. This means we failed to show a statistically significant
+difference in means between the groups at the <code>alpha = 0.01</code>
+level.</p>
+</div>
+</div>
+<div id="power-analysis" class="section level2">
+<h2>Power Analysis</h2>
+<p>Statistical significance in a t-test depends on the number of samples
+we have available. Recruiting more people for our study would result in
+more stable results and a higher chance of detecting an effect if it
+exists. So before we conduct our study we will want to know how many
+people we should recruit in order to have enough power to show an effect
+if it exists. We use the <code>mlpwr</code> package for this purpose. If
+it is your first time using this package, you have to install it like
+so:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;mlpwr&quot;</span>)</span></code></pre></div>
+<p>Now the package is permanently installed on your computer. To use it
+in R you need to (re-)load it every time you start a session.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">library</span>(mlpwr)</span></code></pre></div>
+<div id="data-preparation" class="section level3">
+<h3>Data Preparation</h3>
+<p><code>mlpwr</code> relies on simulations for the power analysis. Thus
+we need to write a function that simulates the data and conducts a
+t-test based on our assumptions. The input to this function need to be
+the parameters we want to investigate/optimize for in our power
+analysis. For our scenario a function like this would do:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>simfun_ttest <span class="ot">&lt;-</span> <span class="cf">function</span>(nA, nB) {</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  groupA <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(nA, <span class="at">mean =</span> <span class="dv">5</span>, <span class="at">sd =</span> <span class="dv">2</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  groupB <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(nB, <span class="at">mean =</span> <span class="dv">6</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">t.test</span>(groupA, groupB, <span class="at">alternative =</span> <span class="st">&quot;less&quot;</span>, <span class="at">var.equal =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  res<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.01</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>}</span></code></pre></div>
+<p>This function takes two inputs: nA, nB. These are the group sizes of
+group A and B respectively. These are the design parameters we want to
+optimize for in the power analysis. We want to find out how many
+participants we need per group to achieve a certain power level.</p>
+<p>The function first generates data for each group. We assume the data
+to be normally distributed, thus <code>rnorm</code> is used. We expect
+group A to have a lower mean than group B, because the drug is more
+effective. We expect group A to have a higher variance than group B, as
+the reaction to the new drug is not as consistent across participants as
+it was for the older one. We then conduct a one sided Welch’s t-test to
+compare the means. We set <code>alpha = 0.01</code> and accept the
+alternative hypothesis if the p-value is below that. Our function
+outputs the result of the hypothesis test in a TRUE/FALSE format. This
+is important, as the <code>find.design</code> function of
+<code>mlpwr</code> we will use for the power analysis expects this kind
+of output from the simulation.</p>
+<p>A similar function for a one sample t.test is implemented in the
+example simulation function of <code>mlpwr</code> and can be accessed
+like so:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>simfun_ttest_example <span class="ot">&lt;-</span> <span class="fu">example.simfun</span>(<span class="st">&quot;ttest&quot;</span>)</span></code></pre></div>
+</div>
+<div id="cost-function" class="section level3">
+<h3>Cost function</h3>
+<p><code>mlpwr</code> allows for the option to weigh the design
+parameters with a cost function. When optimizing multiple parameters,
+subitting a cost function is necessary. This allows for easy study
+design optimization under cost considerations. For our example let us
+assume that recruiting participants for the new drug, group A, is more
+difficult (thus more costly) than recruiting for group B, as the drug
+has not been tested as extensively. We can put this in a cost function
+like so:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>costfun_ttest <span class="ot">&lt;-</span> <span class="cf">function</span>(nA, nB) {<span class="fl">1.5</span><span class="sc">*</span>nA <span class="sc">+</span> <span class="dv">1</span><span class="sc">*</span>nB}</span></code></pre></div>
+<p>This assumes that the cost for an additional participant in group A
+is 1.5, while for group B it is 1.</p>
+</div>
+<div id="power-analysis-1" class="section level3">
+<h3>Power Analysis</h3>
+<p>The previous section showed how we can perform a data simulation with
+a subsequent hypothesis test and construct a cost function for automatic
+weighing between the design parameters. Now we perform a power
+simulation with <code>mlpwr</code>.</p>
+<p>A power simulation can be done using the <code>find.design</code>
+function. For our purpose we submit 5 parameters to it:</p>
+<ol style="list-style-type: decimal">
+<li><strong>simfun</strong>: a simulation function, that generates the
+data and does the hypothesis test, outputting a logical value. We use
+the function described before.</li>
+<li><strong>boundaries</strong>: the boundaries of the design space that
+are searched. This should be set to a large enough interval in order to
+explore the design space sufficiently.</li>
+<li><strong>power</strong>: the desired power level. We set 0.8 as the
+desired power level.</li>
+<li><strong>costfun</strong>: the costfunction that defines the
+weighting between the design parameters. We use the one defined
+before.</li>
+<li><strong>evaluations</strong> (optional): this optional parameter
+makes the computation faster by limiting the number of reevaluations.
+But this also makes the computation less stable and precise.</li>
+</ol>
+<p><strong>Note</strong>: additional specifications are possible (see <a href="https://cran.r-project.org/package=mlpwr/mlpwr.pdf">documentation</a>)
+but not necessary. For most parameters like the choice of surrogate
+function the default values should already be good choices.</p>
+<p>The <code>find.design</code> function needs to reiterate a data
+simulation multiple times. For this purpose it expects a data generating
+function (DGF) as its main input. The DGF takes the design parameters
+(here <code>nA,nB</code>) as input and must output a logical value of
+whether the hypothesis test was TRUE or FALSE.</p>
+<p>With the specified parameters we can perform the power analysis. We
+set a random seed for reproducibility reasons.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">111</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">find.design</span>(<span class="at">simfun =</span> simfun_ttest, <span class="at">boundaries =</span> <span class="fu">list</span>(<span class="at">nA =</span> <span class="fu">c</span>(<span class="dv">5</span>,<span class="dv">200</span>), <span class="at">nB =</span> <span class="fu">c</span>(<span class="dv">5</span>,<span class="dv">200</span>)),</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>                   <span class="at">power =</span> .<span class="dv">8</span>, <span class="at">costfun =</span> costfun_ttest, <span class="at">evaluations =</span> <span class="dv">1000</span>)</span></code></pre></div>
+<p>Now we can summarize the results using the <code>summary</code>
+command.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">summary</span>(res)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## find.design(simfun = simfun_ttest, boundaries = list(nA = c(5, 
+##     200), nB = c(5, 200)), power = 0.8, evaluations = 1000, costfun = costfun_ttest)
+## 
+## Design: nA = 55, nB = 53
+## 
+## Power: 0.79518,  SE: 0.02359,  Cost: 135.5
+## Evaluations: 1000,  Time: 5.45,  Updates: 32
+## Surrogate: Gaussian process regression</code></pre>
+<p>As we can see the calculated sample size for the desired power of 0.8
+is <code>nA =</code>55, <code>nB =</code>53. The estimated power for
+this sample size is 0.79518 with a standard error of 0.02359. The
+summary additionally reports the number of simulation function
+evaluations, the time until termination in seconds, and the number of
+surrogate model updates. See <a href="https://doi.org/10.1037/met0000611">Zimmer &amp; Debelak
+(2023)</a> for more details. We can also plot our power simulation and
+look at the calculated function using the <code>plot</code>
+function.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">plot</span>(res)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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li1Op3PkyJHFxcX4+L/85S9TpkxZvHhxzdwKS3eQQDCF4EEOTK9evc6ePfvTTz8xDPPHH3/gw86fP88wzM8//7xjxw6apgsLC//44w+LxTJx4sQ5c+YYhjFjxoy77757165dHMcVFRXhsyCEcXFxH3zwgWEYAAA86awKmvIgB+G6JTDIAQCIjo7u0KEDnszZvn37wJyYtm3btm3b9vjx4zNmzHC5XNu2bfN4PAMHDrz11lvfffddAEBGRsaTTz55/PhxTdNiY2MDxiGEly9fxtt9+/athXtEYITGTVRU1MCBA8sVGlcN3dE0DSFkGGbEiBFbt26VZXnIkCE33XTTzJkzjx8/furUqVGjRu3du7d58+ZZWVkVfpDdbq/aE5qmaJpir8wPMwDpgxGaJN26dTt//nxgiOLixYvnz5/v0aMHKOuG/fLLLzfeeGPHjh1btmz5+uuv9+jRIz4+vkePHjk5OcePH8dnZWZmpqSkHDp0qEYfTVGBF0VRFBEYoQkybNiwpKSkCRMmbN++/Zdffpk4cWJSUhKe6jly5MiDBw+eOHECh3gPGzbs888/v+222wAACQkJY8eOHTNmzKZNm3788ccHHnjA4/FgWdYaIjBCE4SiqI0bN7Zv3/6ee+4ZP358hw4dNm7ciGcht27dunv37r169XI4HACAYcOG6bo+atQofOKnn3568803z5w585577omMjPzvf/9bx5gA8qCZQAghpAYjEEIIERiBEEKIwAiEEEIERiCEECIwAiGEEIERCCGECIxACCFEYARCCCECIxBCCBEYgRBCiMAIhBBCBEYghBAiMAIhhBCBEQghhAiMQAghRGAEQgghAiMQQggRGIEQQojACIQQQgRGIIQQIjACIYQQgREIIYQIjEAIIURgBEIIIQIjEEIIERiBEEKIwAiEEEIERiCEECIwAiGE/H+QlHxT8Jj26AAAAABJRU5ErkJggg==" /><!-- --></p>
+<p>Confidence Intervals (gray) are printed in addition to the estimated
+power curve (black), so we can get a feel for how the design parameter
+(here sample sizes <code>nA</code>and <code>nB</code>) influence the
+power level and also where the prediction is more or less uncertain. The
+black dots show us the simulated data. This concludes our power
+analysis.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,3 +1,8 @@
+
+# mlpwr 1.1.1
+
+Added 5 new vignettes contributed by Marc Egli with walkthroughs through various applications: ANOVA, GLM, IRT, multilevel model, t-test. 
+
 # mlpwr 1.1.0
 
 Introducing some new features:

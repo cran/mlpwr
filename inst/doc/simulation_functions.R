@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 #      res$p.value < 0.01
 #  }
 
-## ---- eval = F----------------------------------------------------------------
+## ----eval = F-----------------------------------------------------------------
 #   res <- find.design(simfun = simfun_ttest,
 #       boundaries = c(100,300), power = .95)
 
@@ -49,7 +49,7 @@ knitr::opts_chunk$set(
 #  }
 #  
 
-## ---- eval = F----------------------------------------------------------------
+## ----eval = F-----------------------------------------------------------------
 #  res <- find.design(simfun = simfun_anova,
 #     costfun = function(n,n.groups) 5*n+20*n.groups,
 #     boundaries = list(n = c(10, 150), n.groups = c(5, 30)),
@@ -84,7 +84,7 @@ knitr::opts_chunk$set(
 #          0.01 # test the coefficient of the treatment
 #  }
 
-## ---- eval = F----------------------------------------------------------------
+## ----eval = F-----------------------------------------------------------------
 #  res <- find.design(simfun = simfun_glm1,
 #       boundaries = c(20,100), power = .95)
 
@@ -107,7 +107,7 @@ knitr::opts_chunk$set(
 #          0.01 # test the coefficient of the predictor
 #  }
 
-## ---- eval = F----------------------------------------------------------------
+## ----eval = F-----------------------------------------------------------------
 #  res <- find.design(simfun = simfun_glm2,
 #       boundaries = c(90,200), power = .95)
 
@@ -134,7 +134,7 @@ knitr::opts_chunk$set(
 #      res$p[2] < 0.01  # extract significance
 #  }
 
-## ---- eval = F----------------------------------------------------------------
+## ----eval = F-----------------------------------------------------------------
 #  res <- find.design(simfun = simfun_irt1,
 #       boundaries = c(100,500), power = .95,evaluations =500)
 
@@ -168,7 +168,7 @@ knitr::opts_chunk$set(
 #      res$p[2] < 0.01
 #  }
 
-## ---- eval = F----------------------------------------------------------------
+## ----eval = F-----------------------------------------------------------------
 #  res <- find.design(simfun = simfun_irt2,
 #       boundaries = list(N1 = c(100,700), N2 = c(100,700)),
 #       costfun = costfun_irt2,
@@ -198,7 +198,7 @@ knitr::opts_chunk$set(
 #      any(pvalues < 0.01) # test hypothes that any is significant
 #  }
 
-## ---- eval = F----------------------------------------------------------------
+## ----eval = F-----------------------------------------------------------------
 #  res <- find.design(simfun = simfun_multi1,
 #       boundaries = c(100, 500),
 #       power = .95)
@@ -247,7 +247,7 @@ knitr::opts_chunk$set(
 #      100 * n.countries
 #  
 
-## ---- eval = F----------------------------------------------------------------
+## ----eval = F-----------------------------------------------------------------
 #  res <- find.design(simfun = simfun_multi2,
 #       boundaries = list(n=c(10,40),n.countries=c(5,20)),
 #       costfun = costfun_multi2,

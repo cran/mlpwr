@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marc Egli" />
+
+
+<title>Multilevel Application</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Multilevel Application</h1>
+<h4 class="author">Marc Egli</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#mixed-models-vignette" id="toc-mixed-models-vignette">Mixed Models Vignette</a>
+<ul>
+<li><a href="#introduction-to-mlpwr" id="toc-introduction-to-mlpwr">Introduction to mlpwr</a></li>
+<li><a href="#generalized-linear-mixed-models-poisson" id="toc-generalized-linear-mixed-models-poisson">Generalized Linear
+Mixed Models: Poisson</a></li>
+</ul></li>
+<li><a href="#introduction-to-generalized-linear-mixed-models-glmms" id="toc-introduction-to-generalized-linear-mixed-models-glmms">Introduction
+to Generalized Linear Mixed Models (GLMMs)</a>
+<ul>
+<li><a href="#the-poisson-model" id="toc-the-poisson-model">The Poisson
+Model</a>
+<ul>
+<li><a href="#assumptions-of-the-poisson-model" id="toc-assumptions-of-the-poisson-model">Assumptions of the Poisson
+Model</a></li>
+<li><a href="#formula-of-the-poisson-model" id="toc-formula-of-the-poisson-model">Formula of the Poisson
+Model</a></li>
+<li><a href="#scenario" id="toc-scenario">Scenario</a></li>
+<li><a href="#set-up" id="toc-set-up">Set Up</a></li>
+<li><a href="#data-preparation" id="toc-data-preparation">Data
+preparation</a></li>
+<li><a href="#power-analysis" id="toc-power-analysis">Power
+Analysis</a></li>
+</ul></li>
+<li><a href="#simulating-from-an-existing-model" id="toc-simulating-from-an-existing-model">Simulating from an existing
+model</a>
+<ul>
+<li><a href="#scenario-1" id="toc-scenario-1">Scenario</a></li>
+<li><a href="#set-up-1" id="toc-set-up-1">Set Up</a></li>
+<li><a href="#data-preparation-1" id="toc-data-preparation-1">Data
+Preparation</a></li>
+<li><a href="#cost-function" id="toc-cost-function">Cost
+function</a></li>
+<li><a href="#power-analysis-1" id="toc-power-analysis-1">Power
+Analysis</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="mixed-models-vignette" class="section level1">
+<h1>Mixed Models Vignette</h1>
+<div id="introduction-to-mlpwr" class="section level2">
+<h2>Introduction to mlpwr</h2>
+<p>The <code>mlpwr</code> package is a powerful tool for comprehensive
+power analysis and design optimization in research. It addresses
+challenges in optimizing study designs for power across multiple
+dimensions while considering cost constraints. By combining Monte Carlo
+simulations, surrogate modeling techniques, and cost functions,
+<code>mlpwr</code> enables researchers to model the relationship between
+design parameters and statistical power, allowing for efficient
+exploration of the parameter space.</p>
+<p>Using Monte Carlo simulation, <code>mlpwr</code> estimates
+statistical power across different design configurations by generating
+simulated datasets and performing hypothesis tests on these. A surrogate
+model, such as linear regression, logistic regression, support vector
+regression (SVR), or Gaussian process regression, is then fitted to
+approximate the power function. This facilitates the identification of
+optimal design parameter values.</p>
+<p>The <code>mlpwr</code> package offers two primary types of outputs
+based on specified goals and constraints. Researchers can obtain study
+design parameters that yield the desired power level at the lowest
+possible cost, taking budget limitations and resource availability into
+account. Alternatively, researchers can identify design parameters that
+maximize power within a given cost threshold, enabling informed resource
+allocation.</p>
+<p>In conclusion, the <code>mlpwr</code> package provides a
+comprehensive and flexible tool for power analysis and design
+optimization. It guides users through the process of optimizing study
+designs, enhancing statistical power, and making informed decisions
+within their research context.</p>
+<p>For more details, refer to <a href="https://doi.org/10.1037/met0000611">Zimmer &amp; Debelak
+(2023)</a>.</p>
+<p>In this Vignette we will apply the <code>mlpwr</code> package in a
+mixed model setting to two problems: 1) calculating the sample size for
+a study investigating the points in a math test and 2) calculating the
+number of participants and countries for a study investigating the
+probability of passing a math test. Both examples work with hierarchical
+data (classes &gt; participants, countries &gt; participants)</p>
+</div>
+<div id="generalized-linear-mixed-models-poisson" class="section level2">
+<h2>Generalized Linear Mixed Models: Poisson</h2>
+</div>
+</div>
+<div id="introduction-to-generalized-linear-mixed-models-glmms" class="section level1">
+<h1>Introduction to Generalized Linear Mixed Models (GLMMs)</h1>
+<p>Generalized Linear Mixed Models (GLMMs) are an extension of
+Generalized Linear Models (GLMs) that account for both fixed effects and
+random effects. GLMMs are used when analyzing data with correlated or
+clustered observations, where the random effects capture the dependency
+structure among the clustered observations.</p>
+<div id="the-poisson-model" class="section level2">
+<h2>The Poisson Model</h2>
+<p>The Poisson model is a type of GLMM suitable for count data, where
+the response variable represents the number of occurrences or events in
+a fixed interval. The Poisson distribution is strictly positive meaning
+it expects positive count data.</p>
+<div id="assumptions-of-the-poisson-model" class="section level3">
+<h3>Assumptions of the Poisson Model</h3>
+<ol style="list-style-type: decimal">
+<li><strong>Count Data</strong>: The response variable should be count
+data, representing non-negative integers.</li>
+<li><strong>Independence</strong>: The occurrences of events should be
+independent of each other.</li>
+<li><strong>Mean equals Variance</strong>: In poisson models the mean
+should equal the variance.</li>
+<li><strong>Linearity</strong>: The relationship between the predictors
+and the log-transformed expected counts should be linear.</li>
+</ol>
+</div>
+<div id="formula-of-the-poisson-model" class="section level3">
+<h3>Formula of the Poisson Model</h3>
+<p>The formula for the random intercept Poisson model for the count of
+an observation i in group j can be written as:</p>
+<p><span class="math display">\[
+\log(y_{ij}) = \beta_{00} + \beta_{10}x_{1ij} + \beta_{20}x_{2ij} +
+\ldots + \beta_{p0}x_{pij} + \delta_{0j} + \epsilon_{ji}
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(j\)</span> is the group, observation
+<span class="math inline">\(i\)</span> belongs to</li>
+<li><span class="math inline">\(\log(y_{ij})\)</span> is the
+log-transformed count for the <span class="math inline">\(ij\)</span>th
+observation.</li>
+<li><span class="math inline">\(\beta_{00}\)</span> is the fixed
+intercept term.</li>
+<li><span class="math inline">\(\beta_{10}, \beta_{20}, \ldots,
+\beta_{p0}\)</span> are the fixed effect coefficients for the predictor
+variables <span class="math inline">\(x_{1ij}, x_{2ij}, \ldots,
+x_{pij}\)</span>.</li>
+<li><span class="math inline">\(\delta_{0j}\)</span> is the random
+effect term capturing the random variation in intercepts among
+groups.</li>
+<li><span class="math inline">\(\epsilon_{ji}\)</span> is the random
+error term of an individual observation from its predicted group
+function.</li>
+</ul>
+<p>The Poisson model estimates the coefficients (<span class="math inline">\(\beta\)</span> values) and accounts for the random
+effects by modeling the variation among groups or clusters.</p>
+<p>GLMMs, including the Poisson model, can be fitted in R using packages
+such as <code>lme4</code>, allowing for flexible and comprehensive
+modeling of count data with both fixed and random effects.</p>
+</div>
+<div id="scenario" class="section level3">
+<h3>Scenario</h3>
+<p>A school plans to introduce a new study plan. They want to compare
+this new plan to their existing program using a study. To this end they
+want to randomly pick out participants from different classes and either
+let them continue learning with the old study plan or learn with the new
+plan. A maximum of 4 students per class will be picked and the
+administration of new vs. old plan is approximately 50/50. In the end
+they want to use a math test to assess, whether the new plan lead to a
+significant improvement in points. They deem a GLMM poisson model
+suitable for this study design, as the students are clustered into
+classes and the response is the integer valued score they achieve in the
+math test. To plan their study they want to conduct an a-priori power
+analysis using <code>mlpwr</code>. They want to achieve a power of 0.8
+with a minimum of participants.</p>
+</div>
+<div id="set-up" class="section level3">
+<h3>Set Up</h3>
+<p>To simulate data for an multilevel model task like the one described
+above, we will use the <code>lme4</code> package, for the subsequent
+power simulation we will use the <code>mlpwr</code> package. If it is
+your first time using them, you have to install them like so:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;mlpwr&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;lme4&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;lmerTest&quot;</span>)</span></code></pre></div>
+<p>Now the packages are permanently installed on your computer. To use
+them in R you need to (re-)load them every time you start a session.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(mlpwr)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">library</span>(lmerTest)</span></code></pre></div>
+</div>
+<div id="data-preparation" class="section level3">
+<h3>Data preparation</h3>
+<p>To simulate the data we discuss realistic parameters for a GLMM
+poisson model with the school’s experts. The experts suspect
+underdispersion and a small positive effect of the new study plan so we
+set <code>theta=0.5</code> and <code>beta=c(2,0.2)</code>. The data is
+then simulated according to this model using the
+<code>simulate</code>function. An example of data is given here:</p>
+<pre><code>##   class_id group  x
+## 1        1     1  2
+## 2        2     1 11
+## 3        3     1  6
+## 4        1     1  3
+## 5        2     1  4</code></pre>
+<p><code>class_id</code>is the class the students originated from,
+<code>group</code> indicates what study plan a student was assigned to
+<code>(1==&quot;old&quot;, 2==&quot;new&quot;)</code>and <code>x</code> is the score in the
+math test the students achieve.</p>
+<p>Afterwards a GLMM poisson model is fitted using the
+<code>glmer</code>package and we test the hypothesis if the new plan had
+a statistically significant improvement over the old plan at the level
+<code>alpha=0.05</code>. The whole simulation can be written in a single
+function. The input of the function corresponds to the design parameter
+<code>N= nr. of participants</code> and the output is logical
+<code>TRUE</code>or <code>FALSE</code> depending on the outcome of the
+hypothesis test. With this function we can simulate the whole scenario
+and perform a power analysis with <code>mlpwr</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>simfun_multi1 <span class="ot">&lt;-</span> <span class="cf">function</span>(N) {</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  </span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="co"># generate data</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  params <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">theta =</span> <span class="fl">0.5</span>, <span class="at">beta =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="fl">0.2</span>))</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  num_classes <span class="ot">&lt;-</span> <span class="fu">ceiling</span>(N<span class="sc">/</span><span class="dv">4</span>) <span class="co"># We can recruit a max of 4 people per class</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  class_id <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>num_classes, <span class="at">length.out =</span> N)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  group <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">times=</span><span class="fu">c</span>(<span class="fu">floor</span>(N<span class="sc">/</span><span class="dv">2</span>), <span class="fu">ceiling</span>(N<span class="sc">/</span><span class="dv">2</span>)))</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  </span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">class_id =</span> class_id, <span class="at">group =</span> group)</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  dat<span class="sc">$</span>x <span class="ot">&lt;-</span> <span class="fu">simulate</span>(<span class="sc">~</span>group <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> class_id), <span class="at">newdata =</span> dat,</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>      <span class="at">family =</span> poisson, <span class="at">newparams =</span> params)[[<span class="dv">1</span>]]</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="co"># model</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>  mod <span class="ot">&lt;-</span> <span class="fu">glmer</span>(x <span class="sc">~</span> group <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> class_id), <span class="at">data =</span> dat,</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>      <span class="at">family =</span> poisson)  <span class="co"># fit model</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>  </span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>  <span class="co"># Extract P-Value and coefficient</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>  p_value <span class="ot">&lt;-</span> <span class="fu">summary</span>(mod)<span class="sc">$</span>coefficient[<span class="st">&quot;group&quot;</span>, <span class="st">&quot;Pr(&gt;|z|)&quot;</span>]</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  group_coef <span class="ot">&lt;-</span> <span class="fu">summary</span>(mod)<span class="sc">$</span>coefficient[<span class="st">&quot;group&quot;</span>, <span class="st">&quot;Estimate&quot;</span>]</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>  <span class="co"># Check if coefficient is significantly positive</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>  p_value <span class="sc">&lt;</span> <span class="fl">0.01</span> <span class="sc">&amp;</span> group_coef <span class="sc">&gt;</span> <span class="dv">0</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>}</span></code></pre></div>
+<p>The function takes as input our design parameter <code>N</code>.
+Let’s break down what the function does:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Parameter Definition</strong>: The function defines the
+parameters (intercept, slope and theta) for the model based on our
+assumptions.</li>
+<li><strong>Covariates Generation</strong>: In our scenario we can
+recruit a maximum of 4 students per class in order not to be disruptive.
+Thus we use the ceiling function to calculate the number of classes in
+which we need to recruit. We then use a simple rep, changing the
+arguments slightly for class and group in order to get a balanced
+dataset (group: 1,1,1…2,2,2…; class_id: 1,2,3…n.classes,1,2,3…). Then
+create a dataframe from this.</li>
+<li><strong>Response Generation</strong>: We use the <code>sim</code>
+function to generate our test score according to a GLMM poisson
+model.</li>
+<li><strong>Model Fit</strong>: We fit a GLMM poisson model to the
+created data.</li>
+<li><strong>Hypothesis Test</strong>: Through the glmerTest package we
+have access to p-values for the group parameter estimate. We check if it
+is significant at our specified alpha level and if it is positive. This
+generates the output of the function as a TRUE or FALSE value.</li>
+</ol>
+</div>
+<div id="power-analysis" class="section level3">
+<h3>Power Analysis</h3>
+<p>The previous section showed how we can perform a data simulation with
+a subsequent hypothesis test. To perform a power analysis this
+simulation function is needed, as the package relies on repeated
+simulation of the hypothesis test to find an optimal design parameter
+(here <code>N</code>)</p>
+<p>A power simulation can be done using the
+<code>find.design</code>function. For our purpose we submit 4 parameters
+to it:</p>
+<ol style="list-style-type: decimal">
+<li><strong>simfun</strong>: a simulation function, that generates the
+data and does the hypothesis test, outputting a logical value. We use
+the function defined above.</li>
+<li><strong>boundaries</strong>: the boundaries of the design space
+(number of participants) that are searched. This should be set to a
+large enough value such that a large enough space is searched. Here we
+choose c(20, 200)</li>
+<li><strong>power</strong>: the desired power level. We set 0.8 as the
+desired power level.</li>
+<li><strong>evaluations</strong> (optional): this optional parameter
+makes the computation faster by limiting the number of reevaluations.
+But this also makes the computation less stable and precise.</li>
+</ol>
+<p>Note: additional specifications are possible (see <a href="https://cran.r-project.org/package=mlpwr/mlpwr.pdf">documentation</a>)
+but not necessary. For most parameters like the choice of surrogate
+function the default values should already be good choices. As we are
+working with only 1 design parameter here <code>(N = sample size)</code>
+we don’t need to submit a cost function.</p>
+<p>With the specified parameters we can perform the power analysis. We
+set a random seed for reproducibility reasons.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">111</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">find.design</span>(<span class="at">simfun =</span> simfun_multi1, <span class="at">boundaries =</span> <span class="fu">c</span>(<span class="dv">20</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="dv">200</span>), <span class="at">power =</span> .<span class="dv">8</span>, <span class="at">evaluations =</span> <span class="dv">2000</span>)</span></code></pre></div>
+<p>Now we can summarize the results using the <code>summary</code>
+command.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">summary</span>(res)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## find.design(simfun = simfun_multi1, boundaries = c(20, 200), 
+##     power = 0.8, evaluations = 2000)
+## 
+## Design: N = 106
+## 
+## Power: 0.80187,  SE: 0.01123
+## Evaluations: 2000,  Time: 105.86,  Updates: 16
+## Surrogate: Logistic regression</code></pre>
+<p>As we can see the calculated sample size for the desired power of 0.8
+is 106. The estimated power for this sample size is 0.80187 with a
+standard error of 0.01123. The summary additionally reports the number
+of simulation function evaluations, the time until termination in
+seconds, and the number of surrogate model updates. See <a href="https://doi.org/10.1037/met0000611">Zimmer &amp; Debelak
+(2023)</a> for more details. We can also plot our power simulation and
+look at the calculated function using the <code>plot</code>
+function.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">plot</span>(res)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAC6FBMVEUAAAABAQECAgIDAwMEBAQFBQUGBgYHBwcICAgJCQkKCgoLCwsMDAwNDQ0ODg4PDw8QEBARERESEhITExMUFBQVFRUWFhYXFxcYGBgZGRkaGhobGxscHBwdHR0eHh4fHx8gICAhISEiIiIjIyMkJCQlJSUmJiYnJycoKCgpKSkqKiorKyssLCwtLS0uLi4vLy8wMDAxMTEyMjIzMzM0NDQ1NTU2NjY3Nzc4ODg5OTk6Ojo7Ozs8PDw+Pj4/Pz9AQEBBQUFCQkJDQ0NERERFRUVGRkZHR0dISEhJSUlKSkpLS0tMTExNTU1OTk5PT09QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1dYWFhZWVlaWlpbW1tcXFxdXV1eXl5fX19gYGBhYWFiYmJjY2NkZGRlZWVmZmZnZ2doaGhpaWlqampra2tsbGxtbW1ubm5vb29wcHBxcXFycnJzc3N0dHR1dXV2dnZ3d3d4eHh5eXl6enp7e3t8fHx9fX1+fn5/f3+AgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpKTk5OUlJSVlZWWlpaXl5eYmJiZmZmampqbm5ucnJydnZ2enp6fn5+goKChoaGioqKkpKSlpaWmpqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrKzs7O0tLS1tbW2tra3t7e4uLi5ubm6urq7u7u8vLy9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnKysrLy8vMzMzNzc3Q0NDR0dHT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb29vc3Nzd3d3f39/g4ODh4eHi4uLj4+Pk5OTn5+fo6Ojp6enq6urr6+vs7Ozt7e3u7u7v7+/w8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7///8DsG12AAAACXBIWXMAAA7DAAAOwwHHb6hkAAASQklEQVR4nO3deXgU5R0H8NlkE26vRjGYoEQURTlsQKwFTCkeaCRBbSQEEEihgGIMR1AOxRQJgnILGkLAiKi5t7UtqIRDBOt9oFLFKA7kvliSvP9259qd433fOXaG7M683+cxu8k777wzH2eWvd75UYAEG6qrNyDUQ4BUQoBUQoBUQoBUQoBUYhioKkeaRTnoLFyMbluMa1uIWSl2QEzjEsyASxYuEe7uCRZo96fS3+sxy9Kt6La2NnRbK41ZKW7A2kZ0W3sTuu0CfUFY6in+DgEShwABAsTmogF96OVuP3o8fcVvACxMTk7ewTcRIF+q05rZ2zNpJ1u3rgIgo8HrbefbCBAAeQ8nc0AHVwPwczpozRA1EiAmD3FArb7xqlaA/2U8kZ5bw/x+4MCBdcfbJKltQ4duRLc14tpozEpxA9bUodta6tFtzXSLcO9JPUC+HJ7+Dfj2hXPtL63x/fJLYmLirA9oO+fXJ3QBNeQ++SN372Sa70dHfX19/iedktR3okO3oNtaW9FtLTRmpbgBaxvRbRea0G1e2isspesU82YVdDI4JwE4JTwOhcljkEeIv838x6CTLYeeZn87OuNMx6atfFMYAHnkYdvMB0r5usD3/Cd5CgAlmdM3CI9KIQ+k4OGJyDNpwABBeVgiAgQQRw8fAoTlkTxeK+IMIDUfjJAjgNR90EIOANLCgxayP5BGH5SQ7YE0+yCE7A6kwwcuZHMgXT5QIXsD6fSBCREgFSFbA+n3cRaQAR+lkI2BDPkohOwLZNCHAOkUsi2QYR+ZkJlAhR9fkKTuAjp0M7qtGddGY1YqGjAIH49knW10m3AvK1iggg+bJKlpQoeuQ7fV12PaaMxKRQMGA+QRr7OBbhCG1vbBISYhdIoF5SM5yez5GBSkDwHSIWRLoKB9CJB2ITsCmeBDgDQL2RDIFB8bA5nj4xciQE4DMstHECJADgMyz4cXIkDOAjLThxMiQI4CMteHFSJAZgMJ06G+fHxafof/hk2XA5ntwwgZnQ7VPuPz1iUHhRsuBEg0HerTxQAceVa44dLVQOb7GDiChLka/9oMwI/zhBsuNgTyGAZ6Ox+AMxnCDQBnMzIynjxUK8nZWnToc+i2mhpMG41uswLIN6CwNWcX6AF6d4vv0PmbcOM7WlavXr3saKMk5xrRoevQbXW4NhrZZIWPx3Ms/5gwtK4JdZ8uBeDYs8INly4+xSzxGU9R1MxOdv36pkO1Tz/VsfJ9wN9w6VogS3yWU0zK2AH0TYcC3yyYw0yp42/Y2BDoLyzQUnaAMH8mbYFO0aaVY1igLewIBIhPRcELWenjhvWLZmwifP8N4MYMbyAzZMq2L5814bZYt8+k14DbH3hsYV5+SWHy8HmnuSGcDLRv3ROpI2MjKcp9zYjkzGWb94kb7fFq3vBRsyV7UmKM75iJGTZhzqr8CuUS9ni7w4hNyfq546/3nU9X3Ja6YP1bqKVs8n6QTpvKV7ImJLipiPixM3OL8IvaA0gPTknetJG9KSp27F/XvqO+tE3eUdSKU7pm8q3RVPStj6xQOW5sBqRpVys3PTY8muoxYvq6Mq2eht4PwiSEgfYtGXc5FTV06vpy7Tj2AVLby/zMoZFUvwefK9aH47HNpxrYfdyWPoByD8t8TTeOfYAwO7g9PZ7qdmf2m4Z0bA+0J/N6qtvopfpPLLGPDYDg+1aakxjhHrlIwzMdRwJte7APdf1src91cD7hC9T57qb97B3FfpUuHEz1Tt4cpE64A7Xf43sFntKh9NmTdil1c3ZJ8DwWABUcaZDkXAM6dC26rQ7TVktzt/nse6FFDbJ92niXu9s9m83Q8Xi4gerpemFobZ+LYXIxj6BFLNAK6QG0aigVM32vOTzh/h3FLSzQRtH+VC5NoK7L1vE6S5NP2ALV3cgA9d/j51kUT928stI0njAHKn84eQ57CD3K8+TEU0NfMFEnzKcicI/QTJLYnXkugRqSZypPmAMN9gPN9O3Ky0OoG3NN5gnz6VC/E3xuKPHsGuPqt9TMxx47AN3N4AyoynymvPjR6EvmmPcvl9InPIG+TaCouPd8+5ET4564T3VvnQfUcmDDO+c8nleHU8O3W8ETTkDyTWaAPhlAUTe/VpoeFbPUGp7wmTev3GoGaAj7+BwfMTG4d3tsAATZcB9QLfcvWMIGq3gkl38JZSDoxtPgAuvTS+cHOAZ9QhkItf2FVzNA0y3zCRcg1OZX9md8RnfgljHPJ3SBkD7c9ypv55ftWqDmB6vVWQK5GEBvjOQeoocJC1vso3IE/fkNFRNJzARCbP3amB4c0DP+pbsU6Pida/591Bf/H/zTw4qZshHJdVaVz4Jve+WMyEHc+0DXwJ5LWuGjAiS8ahZ+D0wP6/B6vZ8+b1n5LOi2v/UHKrlsPbtBc8XLdyGQPJLpYe3ZZ6wqnwXd9O1x3Rf7jqL7GKDvJB0s9FEDqt2ZCz5v9/8qmR72j0IQKJ91/sSJExtOeCWp86JDN6Hbmpthm76iZ79tzG3TxsnZ38t6mOaj3JhWulW4B7lM4OnBfSkw6pYfhd/908MY2jm1wKLyWZAtr5zqSmTf2NDcw1D0ls+6f0q7G1SPTRV+908P86Uql/8jWz6rvbq6esd/2yWpa0eHbka3tSg3vGQslcp9h5mG9zHHB7Li8/R54R7kCOrzMXAD8N5lwu/i6WHP/hNYVD5LueFFN0dlcfesnIpg4Jr2cYcZoHfjhd+F6WEnW0Bbyi/AovJZig3fEduH/9DC2skssPXigWYn1brB1zfM9/+Bnx6W8jX4bDb7BwvKZym2+8U+sTuEXbByvhh0tXiguqQo6mrXpGZ5L3gsAloWPajIvwsWTsmErxUPVOU9Xlj6nbwPKuYAybd7fsTtxYF9sG5aOGKlKs+kL5n02mnMbkpjCdBUany5aB9CDOjH1zNvpG5Z9B5mT0UxBUi61ZWp1EOV4n2w7NIUqHWqv9T4emqkxneIzAeqvNc1XboPVl39BblOPNCv7zwxLCIuIx+zUaKYDlSR5Jor2wmLLrCEXqfKY5A7reAHzBZJYwaQeKvLR0dkyXfCmmuYGa5xODm+x10r/tOA2SZxTAYq+2PkItn/5fq9W05gVmr0MoHBFIH86Y25Q6J+j9koUUwAEvvcGblE5vP9tRRFFaJXavBKnEGVEa2peOq2iFsweyqKqUDloyNzpLsBwCT2zbIW5EqNXew2mEK0WbdFXP7Izp8xOyqOmUCVd0UslvuABBboM+RKDV0uGQQDNGrlsXZ5D3SCBwr43O3KUuwHSGKBapErNXJFcmb5IE6xzqodWw92Am0xEWiia55yP8ABxmcBrKNsQF08wQDRIyITBrpHnsXsqShBA/m3ezI1C7onn8zL2I7536W7rga/tHGg9FE/AXD6jqmYPRXFNKDZwtd75Xtibm0f/7LGgfpWMT+PXI3ZKFGCBRI2fJHrfuS+mFgdKrBo0EB9MRsliklAz7vHyL+1GljGtAp14gWDOcVOM6fYFMxGiRIkEL/lG3sMU3xtNbCQSUUgpYsF8SA9MnLgQPcI3EaJEmT5LG7Td16eoLjQiIHyWbgyWoqFzjeg14kvn9XReXDbtg+0/jMfXPksbuP3xl21R7FHBspnKdesWFUgjbXodWLKZzXMvCx63CmNOEyCOsW47S+9tdcr2PPBWL15X2ob0W0GT7H5vZev7z+0A9IJEX1A0v3n7lYmuVfjHzBCCShuKQBl1A+YQWXRAyRHeOulQt/PDCoL7xNSQK6Dvu2hjmMGlUUHkBwh2/caYlxFjusRFZ+QAmJtLAFSIOxiX4VO6nYnZNqOtKsjgJQIS1ig6ATIV+dlfUMKaExKSgr7IwUzsCjGgVZxQAXKllAGejgQzMCiaASCKBTHsd+rU/cJKSDd0QYEUfB4Cu66lErW4OMAIKiPx5PnvleLj2OB9lw+qJQAMYH7lA2+dLcmH9sDIU6wiZGQVxjQz4OdCbTUBZvcBB3D5kBwn1d7jlI+g0aM4USgkgF9lZepQ41hbyD4AXRv1MuyvxiszGJToMXUbNlBY7R0TSgABapl8fOg9JTPgvq81vOOStlJFcZAompZ3DwoXeWzYD5lN1z5pvxBJ4yBAtOh+HlQespnQQ+gSZEvKh6VwxgoMB2Knwelp3wWzCfXNUXhE85AgelQ/DwoHeWzYD5FV9zK1yEwo3wWtl7XWVy9LlybrvJZ4ulQ7Dwo/x9qc3zBXkcRBjSq1y7ujvQ6inXq11GEBnfhxnM16LZ6XJuu6ygGpkPx86C0l8+C+cynhG8hSvqF8SkWmA7Fz4PSXj4L4rOjexLMJ5yBRNOh+HlQmstnKX3KB121z3ZA2OCAIAdQust/aT9pPwLEZoN7EtyHALEpib+2lAD5ozyAUt2bPATIH4XPWuEptNLHiUAKn+LYgeUECAP0YNQ2pA8B8njyXNM8BAg9M6C4n+gEI0BKoFT3VowPAVofMcVDgABydlJZ/+vKCBATBFB6xMtYH6cDvRKV6iFAbKAzJCtvii0mQFygQHNcuSo+zgYq7PknDwHiA5ulfcelbxAgIRCgZVS2qo99geDls8Qeb8cMk34TCPpJi5byWdB0/cc++BR+0ilJPfND4jEx+lXpGdcJS2sr9M9sWmh0GzcgIrWN6LYLTeg2L+0VlrLmFBNzbJK8xkCdYfY9xdSAKgddU0qARJEDzaf+7iFAosgu57O3z1hNPo4FGtfrdQIkiRQozzXbQ4AkkVxSrPy6hAptPg4FynSt03gAORPo9V7jtfo4Eyipt6I0NXI9DgLyY6x1zZH7ECARUEXCdYpiTuj1OBBormuN9gPIQUCCxd4+YxQ+BEgENKG7csJlkLWeoQlXoM0RU5UHEAEKAA2JVc5oDrZaODThBsRb5FDLlQeQXYEC08M+ejx9xW8AWz6Loyi5ajjkEdqmQIHpYWfSTrZuXYUvn8VZTInc5hygwPSwg6sB+DkdXz6LpSjs/oDSx7ZAgelhrb7xqlZgy2dxFEl99ip91MpnoduaaHQbtl5XTT26ra0B3YYvnyWPuHwWODz9G2z5LJZiPeRFGL5KVcgGVj5LHtF8sYbcJ/myY6jyWYxE5U3xkIq6auWzWtBtzYjyWWxw9bpqGtBt53Ft2PJZ8gSmh3mz2Ek+mPJZLMVi6jnYI1CQ5dRR6frHoMB8sUNPs3/AlM9iJEquTIT72BUoMF+sgKkiOgVXPouhmBqpvK6mvYGwUQDt6T4B4UOA2ANofC/F+6wESIiHeRU/A+VDgBig4X3R1yVzPJBPYiWVg/QhQB5PefxNmCuzOh3IRzFP+VEqAfLf9Xjevmw0xocAedKi8gmQLGKg3d1ScD4EaFxvyNtAomUdDdRRNP8+l7x6kdTH2UBTmItDK9+IlizrZKAv2cuL302AFOGBKligIVgfRwN9zwI9gONxNhBY7POJfR3r42wgcHjNgnewPA4FKgx8qiHmgX5YEFqfajRi2nR9qoGPqHwWW6dKX/msQOrrMW0GymexOYcpkWWwfJbuiJ9JMz9wR7wjTzFTyqkDAsSGAAECpAgBUgkBUgkBUgkBUgkBUgkBUgkBUsnuohOSHDyBzv4j6LajR9FtR/ZjVoob8P0qdNtHh9Btx/YfE+4FDfTFbml27kamcFYeunHXLnTbC7MK0Y2YAXcvWIbZmgJ029ZZW4S7wpXXDQPpiDexxFjHtxK1luaWZXKusX5fJX4h/xMBEocAqaSLgDqrMf9w4NJUbXDEMzXG+p2vPi//08UACusQIJVYDQSpTKYlH3qBv5Oevmw//WPy8+FgA1oNBKlMpiHVac3++Wp6+rL99I/Jz4eDDmgxEKwymXryHk5u9nfS0Zfrp39Mfj4cdECLgWCVybTkoWb/fDVdfZl++sfk58NBB7QYSF6ZTGuYHeU76erL9DM0JjMfDjrgRfhXTFyZTGuYHeU76er7ULOhMbn5cNABLQaCVSbTEmZH+U66+jL99I/Jz4eDDmgxEKwymZYwO8p30tWX6ad/TH4+HHRAq08xSGUyLWFPFb6Tnr5sP91jCvPhYAOSZ9IqIUAqIUAqIUAqIUAqIUAqIUAqCQuguIQW5mZ4XheMHR5AFPtUlwChEpcU9RUgQOjEbb9ndCcBQidux6keOwkQOnE7wOorfiNAyPiAvIOnESBkfEDgsOsDAoQKAwRmDrqJACHCAp2NoQgQIiwQ2E2AQjEESCUESCUESCUESCUESCUESCUESCUESCUESCUESCX/B6LNNekvb8jKAAAAAElFTkSuQmCC" /><!-- --></p>
+<p>Confidence Intervals (gray) are printed in addition to the estimated
+power curve (black), so one can get a feel for how the design parameter
+(here sample size N) influences the power level and also where the
+prediction is more or less uncertain. The black dots show us the
+simulated data.</p>
+</div>
+</div>
+<div id="simulating-from-an-existing-model" class="section level2">
+<h2>Simulating from an existing model</h2>
+<p>In some cases there already exists data or models from a pilot study
+for example, which one can use. This helps to get more realistic
+estimates and simulations of the problem.</p>
+<div id="scenario-1" class="section level3">
+<h3>Scenario</h3>
+<p>An international committee wants to conduct a study investigating the
+effects of stress on the probability of passing a math exam. To this end
+they want to recruit participants from different countries and assess
+their cortisol levels before filling out a math test. Additionally they
+measure intelligence to control for different IQ levels. In the end they
+want to fit a mixed effects logistic regression to estimate if stress
+(measured by cortisol) has a significant effect on the probability of
+passing the math test. In order to plan their study the committee has
+issued us to perform an a-priori power analysis. Our goal is to find the
+number of participants and number of countries to include in the study
+that maximize the power under set cost constraints.</p>
+</div>
+<div id="set-up-1" class="section level3">
+<h3>Set Up</h3>
+<p>To simulate data for an IRT task like the one described above, we
+will use the <code>lme4</code> package, for the subsequent power
+simulation we will use the <code>mlpwr</code> package.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">library</span>(mlpwr)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="fu">library</span>(lmerTest)</span></code></pre></div>
+</div>
+<div id="data-preparation-1" class="section level3">
+<h3>Data Preparation</h3>
+<p>All the data here is simulated, but assume for this first part that
+the simulated “original” data would correspond to some existing real
+world data (perhaps from a pilot study). If you have original data you
+can then fit a model to it and simulate datasets from this model. This
+would give you a more realistic data generation and make the power
+simulation more accurate to real life scenarios. From this “original”
+model we will simulate more data and then perform a simulation power
+analysis using the <code>mlpwr</code>package. The original data looks as
+follows:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>logistic <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="dv">1</span><span class="sc">/</span>(<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>x))</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">109</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co"># 300 participants from 20 countries</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>N.original <span class="ot">&lt;-</span> <span class="dv">300</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>n.countries.original <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co"># generate original data</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>dat.original <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">country =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>n.countries.original,</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>    <span class="at">length.out =</span> N.original), <span class="at">iq =</span> <span class="fu">rnorm</span>(N.original),</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>    <span class="at">cortisol =</span> <span class="fu">rnorm</span>(N.original))</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>country.intercepts <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n.countries.original, <span class="at">sd =</span> <span class="fl">0.5</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>dat.original<span class="sc">$</span>intercepts <span class="ot">&lt;-</span> country.intercepts[dat.original<span class="sc">$</span>country]</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>beta <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.4</span>, <span class="sc">-</span><span class="fl">0.3</span>)  <span class="co"># parameter weights</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>prob <span class="ot">&lt;-</span> <span class="fu">logistic</span>(<span class="fu">as.matrix</span>(dat.original[<span class="fu">c</span>(<span class="st">&quot;intercepts&quot;</span>,</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>    <span class="st">&quot;iq&quot;</span>, <span class="st">&quot;cortisol&quot;</span>)]) <span class="sc">%*%</span> <span class="fu">as.matrix</span>(beta))  <span class="co"># get probability</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>dat.original<span class="sc">$</span>criterion <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N.original, <span class="dv">1</span>, prob)  <span class="co"># draw according to probability</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>dat.original <span class="ot">&lt;-</span> dat.original[,<span class="fu">names</span>(dat.original)<span class="sc">!=</span><span class="st">&quot;intercepts&quot;</span>]</span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co"># fit original model to obtain parameters</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a>mod.original <span class="ot">&lt;-</span> <span class="fu">glmer</span>(criterion <span class="sc">~</span> iq <span class="sc">+</span> cortisol <span class="sc">+</span> <span class="dv">0</span> <span class="sc">+</span></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a>    (<span class="dv">1</span> <span class="sc">|</span> country), <span class="at">data =</span> dat.original, <span class="at">family =</span> binomial)</span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a>dat.original[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,]</span></code></pre></div>
+<pre><code>##   country         iq   cortisol criterion
+## 1       1 -1.9583484  1.4651839         0
+## 2       2  1.2421083  0.2308594         0
+## 3       3  0.2472609 -0.1404932         1
+## 4       4  2.1371162  0.5010693         1
+## 5       5 -0.9539092  1.3807436         1</code></pre>
+<p><strong>Note</strong>: The logit function was explicitly defined here
+but could also be imported from packages like <code>boot</code> and used
+with <code>boot:logit</code></p>
+<p>Thus we assume to have a dataset of 300 people, residing in 20
+countries. For every observation we have an indicator if the math test
+was passed (<code>criterion</code>), normalized IQ-value
+(<code>iq</code>), and cortisol level (<code>cortisol</code>). From this
+data we can fit an original model, which can be used to simulate further
+datasets. Similar to the first example we set up a simulation function
+that simulates data, then performs a hypothesis test.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>simfun_multi2 <span class="ot">&lt;-</span> <span class="cf">function</span>(n, n.countries) {</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>    <span class="co"># generate data</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>    dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">country =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>n.countries,</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>        <span class="at">length.out =</span> n <span class="sc">*</span> n.countries), <span class="at">iq =</span> <span class="fu">rnorm</span>(n <span class="sc">*</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>        n.countries), <span class="at">cortisol =</span> <span class="fu">rnorm</span>(n <span class="sc">*</span> n.countries))</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>    dat<span class="sc">$</span>criterion <span class="ot">&lt;-</span> <span class="fu">simulate</span>(mod.original, <span class="at">nsim =</span> <span class="dv">1</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>        <span class="at">newdata =</span> dat, <span class="at">allow.new.levels =</span> <span class="cn">TRUE</span>, <span class="at">use.u =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>        <span class="fu">unlist</span>()  <span class="co"># criterion data from the fitted model</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>    <span class="co"># test hypothesis</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>    mod <span class="ot">&lt;-</span> <span class="fu">glmer</span>(criterion <span class="sc">~</span> iq <span class="sc">+</span> cortisol <span class="sc">+</span> <span class="dv">0</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>        country), <span class="at">data =</span> dat, <span class="at">family =</span> binomial)</span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>    <span class="fu">summary</span>(mod)[[<span class="st">&quot;coefficients&quot;</span>]][<span class="st">&quot;cortisol&quot;</span>, <span class="st">&quot;Pr(&gt;|z|)&quot;</span>] <span class="sc">&lt;</span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>        <span class="fl">0.01</span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>}</span></code></pre></div>
+<p>This function follows the following steps:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Data Generation</strong>: Creating a dataframe with columns
+“iq”, “cortisol”, “country”. Then simulating a response using the
+previously estimated original model.</li>
+<li><strong>Model Fit</strong>: A binomial <code>glmer</code>model from
+<code>lme4</code>is fit to the data.</li>
+<li><strong>Hypothesis testing</strong>: If the p-value of the
+“cortisol” coefficient is significant at an alpha of 0.01, we deem a
+statistically significant effect of stress on the performance in the
+math test has been found and return TRUE.</li>
+</ol>
+<p>This function is also implemented the same way in the
+<code>mlpwr</code> package and can be accessed using:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">example.simfun</span>(<span class="st">&quot;multi2&quot;</span>)</span></code></pre></div>
+</div>
+<div id="cost-function" class="section level3">
+<h3>Cost function</h3>
+<p>Now that the data generation and hypothesis test is done, we also
+need to specify a cost function. The committee told us that recruiting
+in a lot of different countries is costly because recruitment has to be
+set up multiple times, while just recruiting one additional participant
+is less expensive. We incorporate this in the following cost
+function:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>costfun_multi2 <span class="ot">&lt;-</span> <span class="cf">function</span>(n, n.countries) <span class="dv">5</span> <span class="sc">*</span> n <span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>    <span class="dv">100</span> <span class="sc">*</span> n.countries</span></code></pre></div>
+<p>This assumes that the committee spends on average 5$ USD for an
+additional participant but 100$ USD to recruit in an additional
+country.</p>
+</div>
+<div id="power-analysis-1" class="section level3">
+<h3>Power Analysis</h3>
+<p>The previous sections showed how we can perform a data simulation
+with a subsequent hypothesis test and how to build a custom cost
+function. To perform a power analysis the simulation function is needed,
+as the package relies on repeated simulation of the hypothesis test to
+find an optimal design parameter (here <code>n</code> and
+<code>n.countries</code>)</p>
+<p>A power simulation can be done using the
+<code>find.design</code>function. For our purpose we submit 4 parameters
+to it:</p>
+<ol style="list-style-type: decimal">
+<li><strong>simfun</strong>: a simulation function, that generates the
+data and does the hypothesis test, outputting a logical value. We use
+the function defined above.</li>
+<li><strong>boundaries</strong>: the boundaries of the design space
+(number of participants, number of countries) that are searched. This
+should be set to a large enough value such that a large enough space is
+searched. We need to submit a named vector as we have multiple design
+parameters like so: list(n = c(10,100), n.countries = c(5, 20))</li>
+<li><strong>cost</strong>: We have a budget of 3000 USD, we want to
+obtain the best design parameters for maximum power under this cost
+constraint.</li>
+<li><strong>evaluations</strong> (optional): this optional parameter
+makes the computation faster by limiting the number of reevaluations.
+But this also makes the computation less stable and precise.</li>
+</ol>
+<p>Note: additional specifications are possible (see <a href="https://cran.r-project.org/package=mlpwr/mlpwr.pdf">documentation</a>)
+but not necessary. Some parameters like the choice of surrogate function
+the default values should already be good choices. As we are working
+with only 1 design parameter here (N = sample size) we don’t need to
+submit a cost function.</p>
+<p>With the specified parameters we can perform the power analysis. We
+set a random seed for reproducibility reasons.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">112</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">find.design</span>(<span class="at">simfun =</span> simfun_multi2, <span class="at">boundaries =</span> <span class="fu">list</span>(<span class="at">n =</span> <span class="fu">c</span>(<span class="dv">10</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>    <span class="dv">300</span>), <span class="at">n.countries =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">20</span>)), <span class="at">costfun =</span> costfun_multi2,</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>    <span class="at">cost =</span> <span class="dv">2000</span>, <span class="at">evaluations =</span> <span class="dv">2000</span>)</span></code></pre></div>
+<p>Now we can summarize the results using the <code>summary</code>
+command.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">summary</span>(res)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## find.design(simfun = simfun_multi2, boundaries = list(n = c(10, 
+##     300), n.countries = c(5, 20)), evaluations = 2000, costfun = costfun_multi2, 
+##     cost = 2000)
+## 
+## Design: n = 180, n.countries = 11
+## 
+## Power: 0.63944,  SE: 0.01197,  Cost: 2000
+## Evaluations: 2000,  Time: 195.08,  Updates: 32
+## Surrogate: Gaussian process regression</code></pre>
+<p>As we can see the calculated sample size for a cost of max. 2000 is
+180 the number of countries 11 with a power of 0.63944 and a standard
+error of 0.01197. The summary additionally reports the number of
+simulation function evaluations, the time until termination, and the
+number of surrogate model updates. The details of the surrogate modeling
+algorithm are described in a <a href="https://doi.org/10.1037/met0000611">paper</a>.We can also plot our
+power simulation and look at the calculated function using the
+<code>plot</code> function.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">plot</span>(res)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>The black dots show us the simulated data. The red line corresponds
+to the cost constraint. The violet cross corresponds to the optimal
+design. The power level is indicated by the blue color. More fine
+grained results can be obtained using more evaluations.</p>
+<p>We report back to the committee that under their cost constraint of
+2000 their sample size is180 participants and the number of countries to
+recruit in is 11. This results in an estimated power of 0.6394404.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

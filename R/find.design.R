@@ -18,7 +18,7 @@
 #' @param init.perc numeric; percentage of evaluations used for the initialization phase
 #' @param dat list of data from a previous design result.
 #' @param silent logical; suppresses output during the search.
-#' @param autosave_dir character; file location for saving the dat object after each update.
+#' @param autosave_dir character; file location for saving the `dat` object after each update. The `dat` object is saved in `autosave_dir/dat_autosave.Rdata`. It can be loaded for example using `load(paste0(autosave_dir,"/dat_autosave.Rdata"))`.
 #' @param control list specifying arguments passed to the surrogate models. For example, list(covtype='gauss') can be used with the gpr surrogate to use a different covariance structure than the default.
 #' @param continue Object of class designresult as created by the find.design function. Will be used to continue the search, using all collected simulation results so far.
 #' @param goodvals character to indicate whether higher or lower criterion values are preferable given equal cost. For statistical power, higher values are better, so its "high", otherwise "low".
@@ -169,6 +169,11 @@ find.design <- function(simfun, boundaries, power = NULL,
             surrogate <- "logreg"
         if (length(boundaries) > 1)
             surrogate <- "gpr"
+    }
+
+    # For SVR, check if necessary package is available:
+    if (surrogate == "svr" && !requireNamespace("WeightSVM", quietly = TRUE)) {
+        message("Package WeightSVM is not installed. Please install it to use this surrogate.")
     }
 
     # warn if ci is termination critrerion

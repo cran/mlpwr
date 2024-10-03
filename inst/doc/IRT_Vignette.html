@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marc Egli" />
+
+
+<title>IRT Application</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">IRT Application</h1>
+<h4 class="author">Marc Egli</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#item-response-theory-irt-vignette" id="toc-item-response-theory-irt-vignette">Item Response Theory (IRT)
+Vignette</a>
+<ul>
+<li><a href="#introduction-to-mlpwr" id="toc-introduction-to-mlpwr">Introduction to mlpwr</a></li>
+<li><a href="#rasch-vs.-2pl" id="toc-rasch-vs.-2pl">Rasch vs. 2PL</a>
+<ul>
+<li><a href="#introduction-to-the-rasch-and-2pl-model" id="toc-introduction-to-the-rasch-and-2pl-model">Introduction to the
+Rasch and 2PL Model</a></li>
+<li><a href="#scenario" id="toc-scenario">Scenario</a></li>
+<li><a href="#set-up" id="toc-set-up">Set Up</a></li>
+<li><a href="#data-preparation" id="toc-data-preparation">Data
+Preparation</a></li>
+<li><a href="#model-fit" id="toc-model-fit">Model fit</a></li>
+<li><a href="#power-analysis" id="toc-power-analysis">Power
+Analysis</a></li>
+</ul></li>
+<li><a href="#dif-analysis" id="toc-dif-analysis">DIF Analysis</a>
+<ul>
+<li><a href="#scenario-1" id="toc-scenario-1">Scenario</a></li>
+<li><a href="#set-up-1" id="toc-set-up-1">Set Up</a></li>
+<li><a href="#data-preparation-1" id="toc-data-preparation-1">Data
+Preparation</a></li>
+<li><a href="#cost-function" id="toc-cost-function">Cost
+function</a></li>
+<li><a href="#power-analysis-1" id="toc-power-analysis-1">Power
+Analysis</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="item-response-theory-irt-vignette" class="section level1">
+<h1>Item Response Theory (IRT) Vignette</h1>
+<div id="introduction-to-mlpwr" class="section level2">
+<h2>Introduction to mlpwr</h2>
+<p>The <code>mlpwr</code> package is a powerful tool for comprehensive
+power analysis and design optimization in research. It addresses
+challenges in optimizing study designs for power across multiple
+dimensions while considering cost constraints. By combining Monte Carlo
+simulations, surrogate modeling techniques, and cost functions,
+<code>mlpwr</code> enables researchers to model the relationship between
+design parameters and statistical power, allowing for efficient
+exploration of the parameter space.</p>
+<p>Using Monte Carlo simulation, <code>mlpwr</code> estimates
+statistical power across different design configurations by generating
+simulated datasets and performing hypothesis tests on these. A surrogate
+model, such as linear regression, logistic regression, support vector
+regression (SVR), or Gaussian process regression, is then fitted to
+approximate the power function. This facilitates the identification of
+optimal design parameter values.</p>
+<p>The <code>mlpwr</code> package offers two primary types of outputs
+based on specified goals and constraints. Researchers can obtain study
+design parameters that yield the desired power level at the lowest
+possible cost, taking budget limitations and resource availability into
+account. Alternatively, researchers can identify design parameters that
+maximize power within a given cost threshold, enabling informed resource
+allocation.</p>
+<p>In conclusion, the <code>mlpwr</code> package provides a
+comprehensive and flexible tool for power analysis and design
+optimization. It guides users through the process of optimizing study
+designs, enhancing statistical power, and making informed decisions
+within their research context.</p>
+<p>For more details, refer to <a href="https://doi.org/10.1037/met0000611">Zimmer &amp; Debelak
+(2023)</a>.</p>
+<p>In this Vignette we will apply the <code>mlpwr</code> package to an
+Item Response problem. We will tackle two types of problems: 1) testing
+whether a Rasch or a 2PL model is more suitable to our data and 2)
+conducting a DIF analysis in a 2PL model. Both of these problems require
+an a-priori power analysis to ensure enough participants are recruited
+to appropriately test our hypothesis. To facilitate the understanding we
+will apply our analysis to a concrete research setting: evaluating a
+math test in school.</p>
+</div>
+<div id="rasch-vs.-2pl" class="section level2">
+<h2>Rasch vs. 2PL</h2>
+<div id="introduction-to-the-rasch-and-2pl-model" class="section level3">
+<h3>Introduction to the Rasch and 2PL Model</h3>
+<p>The Rasch model, also known as the Rasch measurement model or the
+Rasch model for item response theory (IRT), is a widely used
+psychometric model for analyzing data in educational and psychological
+measurement. It provides a framework for assessing the relationship
+between respondents’ abilities and item difficulties.</p>
+<p>The Rasch model assumes that <span class="math display">\[Pr(U_{pi} =
+1 | \theta_p, \beta_i)\]</span>, the probability of an individual <span class="math inline">\(p\)</span> correctly solving a test item <span class="math inline">\(i\)</span>, is influenced by both the
+characteristics of the item (item parameters) and the person (person
+parameters). Specifically, the probability of a person with a math
+ability <span class="math inline">\(\theta_p\)</span> answering an item
+correctly increases as their math ability becomes more pronounced.
+Conversely, as the difficulty of an item <span class="math inline">\(\beta_i\)</span> increases, the probability of
+answering that item correctly decreases. This relationship can be
+represented by the following formula:</p>
+<p><span class="math display">\[
+Pr(U_{pi} = 1 | \theta_p, \beta_i) = \frac{e^{\theta_p - \beta_i}}{1 +
+e^{\theta_p - \beta_i}}
+\]</span></p>
+<p>The Rasch model assumes a strict <strong>equality of item
+discrimination</strong> across all items. In general, the item
+discrimination parameter measures the extent to which an item is capable
+of distinguishing between individuals with different abilities. In
+analytical terms, the item discrimination parameter represents the slope
+of the item response function graph. A steeper slope indicates a
+stronger relationship between the ability (<span class="math inline">\(\theta\)</span>) and a correct response,
+indicating how effectively the item discriminates among examinees along
+the ability scale continuum. A higher value of the item discrimination
+parameter suggests that the item is more effective in differentiating
+examinees. Practically, a higher discrimination parameter value means
+that the probability of a correct response increases more rapidly as the
+latent trait (<span class="math inline">\(\theta\)</span>) increases.
+The Rasch model assumes this item discrimination to be equal among all
+items, which might not be the optimal fit for the data. Thus a second
+model, the 2PL model, was introduced.</p>
+<p>The two-parameter logistic (2PL) model is a more flexible alternative
+and can be seen as an extension of the Rasch model. When the assumption
+of equal item discrimination is no good fit for the data, the 2PL model
+is preferred over the Rasch model. The 2PL model introduces a second
+item parameter, called the discrimination or slope parameter (denoted as
+<span class="math inline">\(\alpha\)</span>), in addition to the
+difficulty parameter (denoted as <span class="math inline">\(\beta_i\)</span>) for each item <span class="math inline">\(i\)</span>. Mathematically, the 2PL model can be
+described as follows:</p>
+<p><span class="math display">\[
+Pr(U_{pi} = 1 | \theta_p, \alpha_i, \beta_i) =
+\frac{e^{\alpha_i(\theta_p - \beta_i)}}{1 + e^{\alpha_i(\theta_p -
+\beta_i)}}
+\]</span></p>
+<p>A high value of <span class="math inline">\(\alpha_i\)</span>
+indicates that the item has a strong ability to distinguish among test
+takers. This means that the probability of giving a correct response
+increases more rapidly as the ability <span class="math inline">\(\theta\)</span> increases.</p>
+<p>When evaluating psychological and educational tests, researchers
+often face the question of which IRT model better describes the data. In
+this chapter, our specific hypothesis test aims to address whether the
+inclusion of the additional discrimination parameter in the 2PL model is
+essential for describing the data, or if the discrimination parameters
+are sufficiently similar for the Rasch model to adequately describe the
+data. Therefore, it becomes relevant to test the null hypothesis of
+equal slope parameters, as this may allow us to reject an incorrectly
+assumed Rasch model. Conducting a power analysis can help determine the
+minimum sample size needed to reject the simpler Rasch model. In the
+following sections, we will first perform an a priori power analysis and
+then a posteriori power analysis to test the Rasch model against the 2PL
+model.</p>
+</div>
+<div id="scenario" class="section level3">
+<h3>Scenario</h3>
+<p>A school is interested in accurately assessing the math skills of
+their students to inform instructional strategies and curriculum
+development. They want to administer a math test to a group of students
+and collect their item response data. In the end the goal is to find an
+adequate model for the data to better understand how the math test
+assesses the math ability of students. We propose two modeling
+approaches: the Rasch model or the Two-Parameter Logistic (2PL)
+model.</p>
+<p>The Rasch model assumes that an item only influences the response
+probability through item difficulty, disregarding variations in item
+discrimination. We are primarily interested in estimating the difficulty
+level of each math item to identify areas where students might struggle
+the most. The Rasch model can provide precise estimates of item
+difficulty, allowing the school to focus on improving those specific
+concepts or skills.</p>
+<p>However, we also recognize that the 2PL model can offer additional
+insights by considering item discrimination. By incorporating
+discrimination parameters, the 2PL model captures the extent to which an
+item differentiates between students with high and low math abilities.
+This information can help identify items that are particularly effective
+at discriminating between students with varying skill levels.</p>
+<p>To make an informed decision, we plan to compare the Rasch and 2PL by
+testing them against each other using a likelihood ratio test. Once we
+have data we could simply test if there is a statistically significant
+difference between the models. But this test is only reliable if there
+is enough data to begin with. To ensure that our planned test will be
+able to detect differences up to a margin of error, we decide to do an
+a-priori power analysis to determine the required sample size before we
+start collecting data. For this we use the <code>mlpwr</code>
+package.</p>
+</div>
+<div id="set-up" class="section level3">
+<h3>Set Up</h3>
+<p>To simulate data for an IRT task like the one described above, we
+will use the <code>mirt</code> package. For the subsequent power
+simulation we will use the <code>mlpwr</code> package. If it is your
+first time using them, you have to install them like so:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;mlpwr&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;mirt&quot;</span>)</span></code></pre></div>
+<p>Now the packages are permanently installed on your computer. To use
+them in R you need to (re-)load them every time you start a session.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(mlpwr)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(mirt)</span></code></pre></div>
+</div>
+<div id="data-preparation" class="section level3">
+<h3>Data Preparation</h3>
+<p>To simulate the data for our scenario, we need the following
+specifications:</p>
+<ol style="list-style-type: decimal">
+<li>In discussion with the schools experts we define the
+discriminability of the items <code>a</code>, and the item difficulty
+<code>d</code>. This corresponds to slopes and intercepts in the 2PL
+model.</li>
+<li>For illustration purposes we simulate N = 100 observations.</li>
+<li>The data items should be simulated from a 2PL model with binary
+response format (0 = incorrectly solved, 1 = correctly solved)</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Defining intercepts and slopes</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.04</span>, <span class="fl">1.2</span>, <span class="fl">1.19</span>, <span class="fl">0.61</span>, <span class="fl">1.31</span>, <span class="fl">0.83</span>, <span class="fl">1.46</span>, <span class="fl">1.27</span>, <span class="fl">0.51</span>, <span class="fl">0.81</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.06</span>, <span class="sc">-</span><span class="fl">1.79</span>, <span class="sc">-</span><span class="fl">1.15</span>, <span class="fl">0.88</span>, <span class="sc">-</span><span class="fl">0.2</span>, <span class="sc">-</span><span class="fl">1.87</span>, <span class="fl">1.23</span>, <span class="sc">-</span><span class="fl">0.08</span>, <span class="sc">-</span><span class="fl">0.71</span>, <span class="fl">0.6</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># Setting number of observations </span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co"># Itemtype </span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>itemtype <span class="ot">&lt;-</span> <span class="st">&quot;2PL&quot;</span></span></code></pre></div>
+<p>Afterwards we can simulate a dataset using the function
+<code>simdata</code> in the package <code>mirt</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Simulate Data</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>sim_data <span class="ot">&lt;-</span> <span class="fu">simdata</span>(<span class="at">a =</span> a, <span class="at">d =</span> d, <span class="at">N =</span> N, <span class="at">itemtype =</span> itemtype)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># First 5 rows if simulated data</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>sim_data[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,]</span></code></pre></div>
+<pre><code>##      Item_1 Item_2 Item_3 Item_4 Item_5 Item_6 Item_7 Item_8 Item_9 Item_10
+## [1,]      1      0      0      0      0      0      1      0      1       1
+## [2,]      1      0      1      0      0      0      0      0      0       1
+## [3,]      1      0      0      1      1      0      0      1      0       1
+## [4,]      0      0      0      0      0      0      1      0      0       0
+## [5,]      0      0      1      1      0      0      0      0      1       1</code></pre>
+</div>
+<div id="model-fit" class="section level3">
+<h3>Model fit</h3>
+<p>After discussions with the schools experts we deem items 1-4 the most
+important for their test. Thus we want to ensure a good model fit for
+these items. Both a Rasch model or 2PL model are plausible for these
+items, thus we fit them both then administrate a likelihood ratio test
+to check which model fits better. The rest of the items are fit with a
+2PL model.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Fit 2PL model</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">mirt</span>(sim_data)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co"># Rasch contsraint for items 1-4</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>constrained <span class="ot">&lt;-</span> <span class="st">&quot;F = 1-4</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="st">          CONSTRAIN = (1-4, a1)&quot;</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co"># Fit constrained model</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>mod_constrained <span class="ot">&lt;-</span> <span class="fu">mirt</span>(sim_data, constrained)  <span class="co"># Fit 2PL with equal item discrimination</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co"># Compare model fit</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">anova</span>(mod_constrained, mod)  </span></code></pre></div>
+<p>We rely on the p-value of the likelihood ratio test to compare the
+models. We deem the 2PL model significantly better if the p-value is
+below 0.01 and extract this in the form of a logical TRUE/FALSE
+response.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>res<span class="sc">$</span>p[<span class="dv">2</span>] <span class="sc">&lt;</span> <span class="fl">0.01</span>  <span class="co"># extract significance</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div id="power-analysis" class="section level3">
+<h3>Power Analysis</h3>
+<p>The previous section showed how we can perform a data simulation test
+with a subsequent hypothesis test. Now we know the test’s items
+approximately follow the specifications above and we want to make sure
+that the school recruits enough participants to take their test in order
+to later select the correct model. Thus we perform a power simulation
+with <code>mlpwr</code>.</p>
+<p>A power simulation can be done using the
+<code>find.design</code>function. For our purpose we submit 4 parameters
+to it:</p>
+<ol style="list-style-type: decimal">
+<li><strong>simfun</strong>: a simulation function, that generates the
+data and does the hypothesis test, outputting a logical value. We use
+the function described before.</li>
+<li><strong>boundaries</strong>: the boundaries of the design space that
+are searched. This should be set to a large enough value in order to
+explore the design space sufficiently.</li>
+<li><strong>power</strong>: the desired power level. We set 0.95 as the
+desired power level.</li>
+<li><strong>evaluations</strong> (optional): this optional parameter
+makes the computation faster by limiting the number of reevaluations.
+But this also makes the computation less stable and precise.</li>
+</ol>
+<p><strong>Note</strong>: additional specifications are possible (see <a href="https://cran.r-project.org/package=mlpwr/mlpwr.pdf">documentation</a>)
+but not necessary. For most parameters like the choice of surrogate
+function the default values should already be good choices. As we are
+working with only 1 design parameter here (<code>N</code> = sample size)
+we don’t need to submit a cost function that weighs the design
+parameters.</p>
+<p>The <code>find.design</code> function needs to reiterate a data
+simulation multiple times. For this purpose it expects a data generating
+function (DGF) as its main input. The DGF takes an observation number
+<code>N</code> as input and must return a logical value of whether the
+hypothesis test was TRUE or FALSE. We can formulate the above simulation
+process in a function like so:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>simfun_irt1 <span class="ot">&lt;-</span> <span class="cf">function</span>(N) {</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>    <span class="co"># generate data</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>    dat <span class="ot">&lt;-</span> <span class="fu">simdata</span>(<span class="at">a =</span> <span class="fu">c</span>(<span class="fl">1.04</span>, <span class="fl">1.2</span>, <span class="fl">1.19</span>, <span class="fl">0.61</span>, <span class="fl">1.31</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>        <span class="fl">0.83</span>, <span class="fl">1.46</span>, <span class="fl">1.27</span>, <span class="fl">0.51</span>, <span class="fl">0.81</span>), <span class="at">d =</span> <span class="fu">c</span>(<span class="fl">0.06</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>        <span class="sc">-</span><span class="fl">1.79</span>, <span class="sc">-</span><span class="fl">1.15</span>, <span class="fl">0.88</span>, <span class="sc">-</span><span class="fl">0.2</span>, <span class="sc">-</span><span class="fl">1.87</span>, <span class="fl">1.23</span>, <span class="sc">-</span><span class="fl">0.08</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>        <span class="sc">-</span><span class="fl">0.71</span>, <span class="fl">0.6</span>), <span class="at">N =</span> N, <span class="at">itemtype =</span> <span class="st">&quot;2PL&quot;</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>    <span class="co"># test hypothesis</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>    mod <span class="ot">&lt;-</span> <span class="fu">mirt</span>(dat)  <span class="co"># Fit 2PL Model</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>    constrained <span class="ot">&lt;-</span> <span class="st">&quot;F = 1-4</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="st">          CONSTRAIN = (1-4, a1)&quot;</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>    mod_constrained <span class="ot">&lt;-</span> <span class="fu">mirt</span>(dat, constrained)  <span class="co"># Fit 2PL with equal slopes</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>    res <span class="ot">&lt;-</span> <span class="fu">anova</span>(mod_constrained, mod)  <span class="co"># perform model comparison</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>    res<span class="sc">$</span>p[<span class="dv">2</span>] <span class="sc">&lt;</span> <span class="fl">0.01</span>  <span class="co"># extract significance</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>}</span></code></pre></div>
+<p>This function is also implemented the same way in the
+<code>mlpwr</code> package and can be accessed using:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">example.simfun</span>(<span class="st">&quot;irt1&quot;</span>)</span></code></pre></div>
+<p>With the specified parameters we can perform the power analysis. The
+boundaries were set based on an educated guess from experience, but if
+the analysis fails one can always readjust them and do the analysis
+again. We set a random seed for reproducibility reasons.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">find.design</span>(<span class="at">simfun =</span> simfun_irt1, <span class="at">boundaries =</span> <span class="fu">c</span>(<span class="dv">40</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>    <span class="dv">100</span>), <span class="at">power =</span> .<span class="dv">95</span>, <span class="at">evaluations =</span> <span class="dv">2000</span>)</span></code></pre></div>
+<p>Now we can summarize the results using the <code>summary</code>
+command.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">summary</span>(res)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## find.design(simfun = simfun_irt1, boundaries = c(40, 100), power = 0.95, 
+##     evaluations = 2000)
+## 
+## Design: N = 56
+## 
+## Power: 0.95271,  SE: 0.00601
+## Evaluations: 2000,  Time: 655.23,  Updates: 16
+## Surrogate: Logistic regression</code></pre>
+<p>As we can see the calculated sample size for the desired power of
+0.95 is 56. The estimated power for this sample size is 0.95271 with a
+standard error of 0.00601.The summary additionally reports the number of
+simulation function evaluations, the time until termination in seconds,
+and the number of surrogate model updates. See <a href="https://doi.org/10.1037/met0000611">Zimmer &amp; Debelak
+(2023)</a> for more details. We can also plot our power simulation and
+look at the calculated function using the <code>plot</code>
+function.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">plot</span>(res)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>Confidence Intervals (gray) are printed in addition to the estimated
+power curve (black), so we can get a feel for how the design parameter
+(here sample size N) influences the power level and also where the
+prediction is more or less uncertain. The black dots show us the
+simulated data.</p>
+<p>We finished our power analysis and report back to the school that a
+sample size of 56 should be sufficient to determine an appropriate model
+for their IRT problem.</p>
+</div>
+</div>
+<div id="dif-analysis" class="section level2">
+<h2>DIF Analysis</h2>
+<p>Differential Item Functioning (DIF) is the phenomenon that an item
+behaves differently for different groups of people.</p>
+<p>DIF tests are essential in educational testing, particularly when
+examining common sociodemographic characteristics such as gender, age,
+language, and academic background. Detecting DIF helps ensure fairness
+in testing. If a test is unfair, it can disadvantage certain groups of
+individuals and potentially lead to incorrect decisions. For instance,
+in the context of aptitude tests for college admissions, an unfair test
+could wrongly determine whether a student is admitted to a specific
+course of study or not. Therefore, it is crucial to reliably detect and
+address DIF in the data.</p>
+<div id="scenario-1" class="section level3">
+<h3>Scenario</h3>
+<p>A school is developing a math test. They want to ensure that the test
+items are fair and do not favor or disadvantage any specific group of
+students based on their first language. The school’s experts suspect
+that especially the first test item could be problematic. Thus, they
+plan to investigate the presence of DIF in the first item of the test in
+a study. The school will need to recruit native English speakers and
+non-native English speakers for this study, but they don’t know how
+many. Additionally their time resources for recruitment are limited. To
+determine an appropriate sample size under the given cost constraint
+(limited time restraints) we use the <code>mlpwr</code> package for the
+power analysis.</p>
+</div>
+<div id="set-up-1" class="section level3">
+<h3>Set Up</h3>
+<p>To simulate data for an IRT task like the one described above, we
+will use the <code>mirt</code> package. For the subsequent power
+simulation we will use the <code>mlpwr</code> package. If you did not
+run the first part of the script, the <code>mlpwr</code> and
+<code>mirt</code> packages have to be installed and loaded.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">library</span>(mlpwr)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">library</span>(mirt)</span></code></pre></div>
+</div>
+<div id="data-preparation-1" class="section level3">
+<h3>Data Preparation</h3>
+<p>The data simulation follows a similar approach to that in the Rasch
+vs. 2PL section. Thus we will directly set up the simulation
+function.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>simfun_irt2 <span class="ot">&lt;-</span> <span class="cf">function</span>(N1, N2) {</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  <span class="co"># generate data</span></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>  a1 <span class="ot">&lt;-</span> a2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">1.04</span>, <span class="fl">1.2</span>, <span class="fl">1.19</span>, <span class="fl">0.61</span>, <span class="fl">1.31</span>, <span class="fl">0.83</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>                <span class="fl">1.46</span>, <span class="fl">1.27</span>, <span class="fl">0.51</span>, <span class="fl">0.81</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>  d1 <span class="ot">&lt;-</span> d2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.06</span>, <span class="sc">-</span><span class="fl">1.79</span>, <span class="sc">-</span><span class="fl">1.15</span>, <span class="fl">0.88</span>, <span class="sc">-</span><span class="fl">0.2</span>, <span class="sc">-</span><span class="fl">1.87</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>                <span class="fl">1.23</span>, <span class="sc">-</span><span class="fl">0.08</span>, <span class="sc">-</span><span class="fl">0.71</span>, <span class="fl">0.6</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>  a2[<span class="dv">1</span>] <span class="ot">&lt;-</span> a2[<span class="dv">1</span>] <span class="sc">+</span> <span class="fl">0.3</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>  d2[<span class="dv">1</span>] <span class="ot">&lt;-</span> d2[<span class="dv">1</span>] <span class="sc">+</span> <span class="fl">0.5</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>  dat1 <span class="ot">&lt;-</span> <span class="fu">simdata</span>(<span class="at">a =</span> a1, <span class="at">d =</span> d1, <span class="at">N =</span> N1, <span class="at">itemtype =</span> <span class="st">&quot;2PL&quot;</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>  dat2 <span class="ot">&lt;-</span> <span class="fu">simdata</span>(<span class="at">a =</span> a2, <span class="at">d =</span> d2, <span class="at">N =</span> N2, <span class="at">itemtype =</span> <span class="st">&quot;2PL&quot;</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>  dat <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">rbind</span>(dat1, dat2))</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a>  group <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;1&quot;</span>, N1), <span class="fu">rep</span>(<span class="st">&quot;2&quot;</span>, N2))</span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a>  </span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a>  <span class="co"># Fit model</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">multipleGroup</span>(dat, <span class="dv">1</span>, <span class="at">group =</span> group)</span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a>  <span class="co"># Perform DIF for item 1</span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a>  dif <span class="ot">&lt;-</span> <span class="fu">DIF</span>(model, <span class="at">which.par =</span> <span class="fu">c</span>(<span class="st">&quot;a1&quot;</span>, <span class="st">&quot;d&quot;</span>), <span class="at">items2test =</span> <span class="fu">c</span>(<span class="dv">1</span>))</span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>  <span class="co">#Extract significance</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a>  dif<span class="sc">$</span>p[<span class="dv">1</span>] <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a>}</span></code></pre></div>
+<p>The simulation consists of the following steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Data Generation: The function generates simulated data using the
+<code>simdata</code> function. It defines two sets of item parameters,
+<code>a1</code> and <code>d1</code>, for the first group, and
+<code>a2</code> and <code>d2</code> for the second group. These
+parameters represent slope and intercept (equates to item discrimination
+and item difficulty), respectively. The <code>N1</code> and
+<code>N2</code> parameters are the design parameters and specify the
+sample sizes for the first and second groups, respectively. We assume
+DIF for item 1, meaning native English speakers
+<code>(group == 1)</code> have an easier time solving this item than
+non-native English speakers <code>(group == 2)</code> Thus, the
+parameters for the first item differ between the groups (higher
+difficulty and discrimination for non-native English speakers), while
+all the others are the same.</p></li>
+<li><p>Data Preparation: The generated data for both groups are combined
+into a single data frame <code>dat</code>, and a vector
+<code>group</code> is created to indicate the group membership (native
+vs. non-native) of each observation.</p></li>
+<li><p>Fit model: The <code>multipleGroup</code> function is used to fit
+a multiple-group IRT model to the combined data (<code>dat</code>) with
+one latent trait dimension. The group information is provided using the
+<code>group</code> argument.</p></li>
+<li><p>Perform DIF for item 1: The <code>DIF</code> function is applied
+to the fitted model (<code>model</code>) to perform DIF analysis. The
+<code>which.par</code> argument specifies the parameters to test for
+DIF, including discrimination (<code>a</code>) and difficulty
+(<code>d</code>). The <code>items2test</code> argument specifies the
+specific item(s) to test for DIF, with item 1 selected in this
+case.</p></li>
+<li><p>Extract significance: The significance of the DIF analysis for
+item 1 is extracted by comparing the p-value (<code>dif$p[1]</code>)
+with a significance threshold of 0.05. If the p-value is less than 0.05,
+the function returns <code>TRUE</code>, indicating the presence of DIF
+for item 1. Otherwise, it returns <code>FALSE</code>, suggesting no
+significant DIF for item 1. In other words if the function returns true,
+there is evidence that the difficulty of item 1 varies for native
+vs. non-native speakers of the same ability.</p></li>
+</ol>
+<p>Following is one example of a dataframe simulated by the function.
+The group argument corresponds to native vs. non-native speaker, the
+rows to individual students, the columns to the 10 items in the math
+test.</p>
+<pre><code>##    group Item_1 Item_2 Item_3 Item_4 Item_5 Item_6 Item_7 Item_8 Item_9 Item_10
+## 1      1      1      1      0      1      0      0      1      1      1       1
+## 2      1      0      1      1      0      1      1      1      1      0       1
+## 3      1      1      0      0      1      0      0      1      0      0       0
+## 4      1      0      1      0      0      1      0      0      0      0       0
+## 5      1      1      0      0      0      1      1      0      0      0       1
+## 6      2      0      0      0      1      1      0      1      1      0       1
+## 7      2      1      0      1      1      1      0      0      1      1       0
+## 8      2      1      1      1      1      1      0      0      1      1       1
+## 9      2      0      0      1      1      0      0      1      0      0       0
+## 10     2      1      0      1      1      0      0      1      1      1       1</code></pre>
+</div>
+<div id="cost-function" class="section level3">
+<h3>Cost function</h3>
+<p>Now that the data generation and hypothesis test is done, we also
+need to specify a cost function because we have more than one design
+parameter. For this artificial scenario we assume that recruiting
+non-native speakers is harder than recruiting native English speakers,
+because the school has to spend more time recruiting. Put differently
+the cost for recruiting non-native participants is higher. We include
+this into the power analysis by defining a cost function like so:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>costfun_irt2 <span class="ot">&lt;-</span> <span class="cf">function</span>(N1, N2) <span class="dv">5</span> <span class="sc">*</span> N1 <span class="sc">+</span> <span class="dv">7</span> <span class="sc">*</span> N2</span></code></pre></div>
+<p>This assumes that the school spends on average 5 minutes recruiting a
+native speaker vs. 7 minutes for non-native speakers. Contrary to the
+previous example, the school now has a set budget of time to recruit
+participants. They want to know how they should allocate their resources
+in order to gain maximum power.</p>
+</div>
+<div id="power-analysis-1" class="section level3">
+<h3>Power Analysis</h3>
+<p>Now that all components are defined, a power analysis using
+<code>find.design</code> from <code>mlpwr</code> is possible. We need
+the following inputs,</p>
+<ol style="list-style-type: decimal">
+<li><strong>simfun</strong>: a simulation function, that generates the
+data and does the hypothesis test, outputting a logical value. We use
+the function described before.</li>
+<li><strong>boundaries</strong>: the boundaries of the design space that
+are searched. This should be put to large intervals in order to ensure a
+sufficient portion of the design space is explored by the algorithm. We
+have to submit this as a list of named vectors, so the function knows
+which boundaries correspond to what design parameter.</li>
+<li><strong>cost</strong>: the maximum cost (= time budget of the
+school) that the school has. The algorithm will maximize for power given
+the budget constraint.</li>
+<li><strong>evaluations</strong> (optional): this optional parameter
+makes the computation faster by limiting the number of reevaluations.
+But this also makes the computation less stable and precise.</li>
+</ol>
+<p>Note 1: additional specifications are possible (see <a href="https://cran.r-project.org/package=mlpwr/mlpwr.pdf">documentation</a>)
+but not necessary. For most parameters like the choice of surrogate
+function the default values should already be good choices.</p>
+<p>With the specified parameters we can perform the power analysis. We
+set a random seed for reproducibility reasons.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">111</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">find.design</span>(<span class="at">simfun =</span> simfun_irt2, <span class="at">boundaries =</span> <span class="fu">list</span>(<span class="at">N1 =</span> <span class="fu">c</span>(<span class="dv">100</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>    <span class="dv">700</span>), <span class="at">N2 =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">700</span>)), <span class="at">costfun =</span> costfun_irt2,</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>    <span class="at">cost =</span> <span class="dv">4000</span>, <span class="at">evaluations =</span> <span class="dv">1000</span>)</span></code></pre></div>
+<p>Now we can summarize the results using the <code>summary</code>
+command.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">summary</span>(res)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## find.design(simfun = simfun_irt2, boundaries = list(N1 = c(100, 
+##     700), N2 = c(100, 700)), evaluations = 1000, costfun = costfun_irt2, 
+##     cost = 4000)
+## 
+## Design: N1 = 363, N2 = 312
+## 
+## Power: 0.63819,  SE: 0.01743,  Cost: 3999
+## Evaluations: 1000,  Time: 232.59,  Updates: 32
+## Surrogate: Gaussian process regression</code></pre>
+<p>As we can see the calculated sample sizes for a cost of max. 4000 are
+363 for native speakers and 312 for the non-native speakers. The
+estimated power for the sample sizes is 0.63819 with a standard error of
+0.01743. The summary additionally reports the number of simulation
+function evaluations, the time until termination in seconds, and the
+number of surrogate model updates. The details of the surrogate modeling
+algorithm are described in a <a href="https://doi.org/10.1037/met0000611">paper</a>.</p>
+<p>We can also plot our power simulation and look at the calculated
+function using the <code>plot</code> function.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">plot</span>(res)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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H374oW3bDz300Jw5c3Tj+S71zXeD0Zdffjlw4MA+ffpEIpEJEyasXr0aAJYvX962bduBAwdGIpFTTz118eLFmSobppYuXbpu3TrvsJF+neXLl7ds2XLYsGGc84suumj8+PHQeL5LAJijo446ytvdY926dT179gSA7du3FxcXm8ri4uIdO3ZkqmyA2r1799y5cy+++GKvppF+nS1bthQWFt51113Tpk178MEHzeyQxvJdAsAcRSIRE9m//fbbjz/++Pnnnw8A5eXlOTk55gU5OTllZWWZKhuatNYzZsyYPHmy/5bHRvp19u3bt3Tp0tGjR997770AMHv2bGg83yUALKHy8vI///nPzz///C233NKvXz8AyM/Pj0aj5mxVVZUhMG1lQ9Nrr73WuXPnwYMH+ysb6dfJzc3t27fv0KFDc3NzTznllI8//hgaz3cJAHNk2/ZNN93UqVOn++67r1u3bqayqKho0yZnUdjNmzcXFRVlqmxoWrt27cKFC88777xrr71269at55133t69exvp12nfvr1XZoyZGbeN5bsEgDl6//33c3JypkyZ4p/MPmjQoC1btpSWliql5s+ff/zxx2eqbGi66qqr5s6dO3fu3L/85S8dOnSYO3duixYtGunXGTx48KZNm1atWqW1fvXVV4cNGwaN51cTzORw9Nhjj/3nP//xDgsLC+fMmQMAq1ateuihh2Kx2PDhwydPnmzwS1vZMLVhw4bbbrvN9Fug0X6dFStWzJ49e+/evf3797/88stNx7JRfJcAsECBsqggRAwUKIsKAAsUKIsKAAsUKIsKAAsUKIsKAAsUKIsKAAsUKIsKAGvKKi4u7tmzZ1VVlb/y8MMPv/POO1Ne+bvf/a4OdkJphgoAa+IqLS3d79aE77777h133BGLxermkpqVAsCauEaNGnX33Xd/+eWXac8uWLDg7LPPHjNmTB1fVfNRAFgT18SJE0ePHn3ppZemnbKTm5t79NFHT5s2re4vrJkoAKyJCxH/9re/LVu27LHHHqt+9thjj/3tb387adKkur+wZqIAsKavHj163Hjjjdddd11DuMO3uSkArFno2muv7dChwzXXXFPfF9LsFADWLGRZ1qxZs/7xj38sWrSovq+leSlYF7G5aMSIEZMnT77sssvq/RapZqXAwZqR7rrrrp07d65ataq+L6QZKQCsGalNmzZ33313fV9F81JwR3OgQFlU4GCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVRAWCBAmVR/ObZH0qlpdJKaam1VEoqrQCkAqm0VEopLZUWKc9aK62E0rbS5tlWWmpNiFNP7P30onUM0SLkhIyQgVPghIyIExIhJWqQITBCRkSIzJxFYESMnEPmPtB5PREhY0lnieBHPVp/vWGv+3YkREbEmPMaTLwSGSExYl5zptL5QOe9poYIGSJRUov1/VsL1GjEbaEMYO7DAyxxmAYwpWU1wITW5m86GpcMURJygxCiJGRknrX0UaEcYMwhJGhBUASKUBESoXIfRKgJNQFp1IBaI2nU2ikQopRaa9AIoEETAGhAMIuDEwACGDgQAFAjAWoADahBJx6oNWjw1QRABTpUBSFioEBZVABYoEBZVO0Dtm5LWa1/5gFq775YfTUdKFBa1T5gr3+yqdY/8wC1ceu++mo6UKC0CkLEQIGyqACwZi2t9YwZMwYOHJifn19SUvLkk08e+HuVUhMnTjyo5u6///7i4uJ27dqde+65+/Y54cacOXN69+5dXFx81VVXSSkPtvIQhIg/ZKPqnJycSCSSk5PTokWLsWPHfvnllzW8OACsWevWW2+dO3fuM888s3v37tmzZ//f//3fggULDvC9WutXXnnlwNtavnz5Pffc8957761Zs2bbtm333nuvqbzyyivnz5+/Zs2aFStWzJo166AqD1Z+tH4IZqtXr66qqvruu+/OOOOMESNG7Ny5M9MrA8Car77//vv77rvv3//+d0lJiWVZI0aMuOWWW5YsWQIATz/9dO/evTt37jx58uSKigoAsG178uTJ7du379Chw4wZMwDgrLPOisViRx555AE2V1paOmnSpOLi4latWp122mnffPMNALz22msnn3xyz549c3JyLrvssmefffagKg9KaXH6IVZWUFBwxRVXjBs37m9/+xsALFiwYMCAAd27d7/oootisZj5ifFD/vRAdanYjp2ysupg30WRcKSoXaazn376af/+/bt06eLVTJ06FQDW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" /><!-- --></p>
+<p>The black dots show us the simulated data. The red line corresponds
+to the cost constraint. The violet cross corresponds to the optimal
+design. The power level is indicated by the blue color.</p>
+<p>We conclude our power analysis with the before stated results: 363
+for native speakers and 312 for the non-native speakers and let the
+school take over the recruitment for their study.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

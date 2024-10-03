@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marc Egli" />
+
+
+<title>GLM Application</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">GLM Application</h1>
+<h4 class="author">Marc Egli</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#generalized-linear-models-glm-vignette" id="toc-generalized-linear-models-glm-vignette">Generalized Linear
+Models (GLM) Vignette</a>
+<ul>
+<li><a href="#introduction-to-mlpwr" id="toc-introduction-to-mlpwr">Introduction to mlpwr</a></li>
+<li><a href="#introduction-to-generalized-linear-models-glms---the-poisson-model" id="toc-introduction-to-generalized-linear-models-glms---the-poisson-model">Introduction
+to Generalized Linear Models (GLMs) - The Poisson Model</a>
+<ul>
+<li><a href="#assumptions-of-the-poisson-model" id="toc-assumptions-of-the-poisson-model">Assumptions of the Poisson
+Model</a></li>
+<li><a href="#formula-for-the-poisson-model" id="toc-formula-for-the-poisson-model">Formula for the Poisson
+Model</a></li>
+<li><a href="#scenario" id="toc-scenario">Scenario</a></li>
+</ul></li>
+<li><a href="#power-analysis" id="toc-power-analysis">Power Analysis</a>
+<ul>
+<li><a href="#data-preparation" id="toc-data-preparation">Data
+Preparation</a></li>
+<li><a href="#power-analysis-1" id="toc-power-analysis-1">Power
+Analysis</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="generalized-linear-models-glm-vignette" class="section level1">
+<h1>Generalized Linear Models (GLM) Vignette</h1>
+<div id="introduction-to-mlpwr" class="section level2">
+<h2>Introduction to mlpwr</h2>
+<p>The <code>mlpwr</code> package is a powerful tool for comprehensive
+power analysis and design optimization in research. It addresses
+challenges in optimizing study designs for power across multiple
+dimensions while considering cost constraints. By combining Monte Carlo
+simulations, surrogate modeling techniques, and cost functions,
+<code>mlpwr</code> enables researchers to model the relationship between
+design parameters and statistical power, allowing for efficient
+exploration of the parameter space.</p>
+<p>Using Monte Carlo simulation, <code>mlpwr</code> estimates
+statistical power across different design configurations by generating
+simulated datasets and performing hypothesis tests on these. A surrogate
+model, such as linear regression, logistic regression, support vector
+regression (SVR), or Gaussian process regression, is then fitted to
+approximate the power function. This facilitates the identification of
+optimal design parameter values.</p>
+<p>The <code>mlpwr</code> package offers two primary types of outputs
+based on specified goals and constraints. Researchers can obtain study
+design parameters that yield the desired power level at the lowest
+possible cost, taking budget limitations and resource availability into
+account. Alternatively, researchers can identify design parameters that
+maximize power within a given cost threshold, enabling informed resource
+allocation.</p>
+<p>In conclusion, the <code>mlpwr</code> package provides a
+comprehensive and flexible tool for power analysis and design
+optimization. It guides users through the process of optimizing study
+designs, enhancing statistical power, and making informed decisions
+within their research context.</p>
+<p>For more details, refer to <a href="https://doi.org/10.1037/met0000611">Zimmer &amp; Debelak
+(2023)</a>.</p>
+<p>In this Vignette we will apply the <code>mlpwr</code> package to a
+generalized linear model (GLM) setting.</p>
+</div>
+<div id="introduction-to-generalized-linear-models-glms---the-poisson-model" class="section level2">
+<h2>Introduction to Generalized Linear Models (GLMs) - The Poisson
+Model</h2>
+<p>Generalized Linear Models (GLMs) extend linear regression to handle
+non-normal response variables and non-linear relationships between
+predictors and the response. GLMs are versatile and can accommodate a
+wide range of response distributions and link functions. One example for
+a GLM is the poisson model.</p>
+<p>The Poisson model is a specific type of GLM used for count data
+analysis. It is suitable when the response variable represents the
+number of occurrences of an event within a fixed interval or in a
+specified region.</p>
+<div id="assumptions-of-the-poisson-model" class="section level3">
+<h3>Assumptions of the Poisson Model</h3>
+<p>The Poisson model makes the following assumptions:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Independence</strong>: The counts for each observation are
+assumed to be independent of each other.</li>
+<li><strong>Count Data</strong>: The response variable consists of
+non-negative integer counts.</li>
+<li><strong>Homogeneity of Variance</strong>: The variance of the counts
+is equal to the mean (equidispersion assumption).</li>
+</ol>
+</div>
+<div id="formula-for-the-poisson-model" class="section level3">
+<h3>Formula for the Poisson Model</h3>
+<p>In the Poisson model, the response variable Y follows a Poisson
+distribution, and the link function is the logarithm (log) function. The
+model can be represented as:</p>
+<p><span class="math display">\[
+\log(E(Y)) = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \ldots + \beta_p X_p
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(E(Y)\)</span> represents the expected
+value or mean of the response variable Y.</li>
+<li><span class="math inline">\(\beta_0, \beta_1, \beta_2, \ldots,
+\beta_p\)</span> are the coefficients or regression parameters
+associated with the predictors <span class="math inline">\(X_1, X_2,
+\ldots, X_p\)</span>.</li>
+</ul>
+<p>The link function (log) in the Poisson model ensures that the linear
+predictor is always positive, satisfying the non-negativity constraint
+of count data.</p>
+<p>The Poisson model estimates the regression coefficients using maximum
+likelihood estimation and allows for inference about the relationship
+between the predictors and the count of the response.</p>
+<p>By fitting a Poisson GLM to the data, you can identify significant
+predictors and quantify their effects on response counts.</p>
+</div>
+<div id="scenario" class="section level3">
+<h3>Scenario</h3>
+<p>In this example, we have a dataset that records the number of
+accidents in different cities. We want to investigate if the type of
+road (Factor A: road1=“common”, road2 = “concrete”, road3 = “new”) has a
+significant influence on the accident counts, while controlling for the
+weather conditions (Factor B: weather1 = “sunny”, weather2 = “rainy”,
+weather3 = “snowing”). Specifically we are interested if our new type of
+road <code>road3</code> is significantly different from the most common
+one <code>road1</code>.</p>
+<p>A corresponding dataset would look like this:</p>
+<pre><code>##   accidents road weather
+## 1        15    1       1
+## 2        29    2       1
+## 3        23    3       1
+## 4        20    1       1
+## 5        17    2       1</code></pre>
+<p>We could conduct a poisson regression like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>mod.original <span class="ot">&lt;-</span> <span class="fu">glm</span>(accidents <span class="sc">~</span>  road <span class="sc">+</span> weather, <span class="at">data =</span> dat.original,</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>    <span class="at">family =</span> poisson)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">summary</span>(mod.original)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = accidents ~ road + weather, family = poisson, data = dat.original)
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  2.971342   0.065246  45.541  &lt; 2e-16 ***
+## road2       -0.314811   0.075936  -4.146 3.39e-05 ***
+## road3        0.101704   0.070691   1.439    0.150    
+## weather2     0.002729   0.073871   0.037    0.971    
+## weather3     0.005450   0.073821   0.074    0.941    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 243.47  on 59  degrees of freedom
+## Residual deviance: 211.13  on 55  degrees of freedom
+## AIC: 498.89
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<p>From the summary output it seems that the coefficient of
+<code>road3</code> does not significantly differ from 0 at a level of
+<code>alpha=0.05</code>. We want to investigate this further and decide
+to conduct a study. We already have the data from above but collecting
+additional data is time intensive. Thus we want to conduct an a-priori
+power analysis to make sure that we will collect enough data in order to
+find an effect if it is present with sufficient power.</p>
+</div>
+</div>
+<div id="power-analysis" class="section level2">
+<h2>Power Analysis</h2>
+<p>Statistical significance of a parameter in a poisson model depends on
+the number of samples we have available. Collecting more data would
+result in more stable outcomes and a higher chance of detecting an
+effect if it exists. So before we conduct our study we will want to know
+how much data we need to collect in order to have enough power to show
+an effect. We use the <code>mlpwr</code> package for this purpose. If it
+is your first time using this package, you have to install it like
+so:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;mlpwr&quot;</span>)</span></code></pre></div>
+<p>Now the package is permanently installed on your computer. To use it
+in R you need to (re-)load it every time you start a session.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(mlpwr)</span></code></pre></div>
+<div id="data-preparation" class="section level3">
+<h3>Data Preparation</h3>
+<p><code>mlpwr</code> relies on simulations for the power analysis. Thus
+we need to write a function that simulates the data and conducts a test
+based on our assumptions. The input to this function need to be the
+parameters we want to investigate/optimize for in our power analysis.
+Luckily we already have some data for our study which we used to fit the
+<code>mod.original</code>model. We can now use this model to simulate
+additional data in an accurate way. For our scenario a simulation
+function would look something like this:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>simfun_glm1 <span class="ot">&lt;-</span> <span class="cf">function</span>(N) {</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>    <span class="co"># generate data</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">road =</span> <span class="fu">gl</span>(<span class="dv">3</span>, <span class="dv">1</span>, <span class="fu">ceiling</span>(N<span class="sc">/</span><span class="dv">3</span>)),</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>        <span class="at">weather =</span> <span class="fu">gl</span>(<span class="dv">3</span>, <span class="fu">ceiling</span>(N<span class="sc">/</span><span class="dv">3</span>)))[<span class="dv">1</span><span class="sc">:</span>N, ]</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>    a <span class="ot">&lt;-</span> <span class="fu">predict</span>(mod.original, <span class="at">newdata =</span> dat, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>    dat<span class="sc">$</span>accidents <span class="ot">&lt;-</span> <span class="fu">rpois</span>(N, a)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>    <span class="co"># test hypothesis</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>    mod <span class="ot">&lt;-</span> <span class="fu">glm</span>(accidents <span class="sc">~</span> road <span class="sc">+</span> weather, <span class="at">data =</span> dat,</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>        <span class="at">family =</span> poisson)</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>    <span class="fu">summary</span>(mod)<span class="sc">$</span>coefficients[<span class="st">&quot;road3&quot;</span>, <span class="st">&quot;Pr(&gt;|z|)&quot;</span>] <span class="sc">&lt;</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>        <span class="fl">0.05</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>}</span></code></pre></div>
+<p>This function takes one input <code>N</code>, the number of
+observations in the dataset. The <code>simfun_glm1</code> function
+performs a simulation-based analysis using generalized linear models
+(GLMs) with a Poisson family. Let’s break down the steps of this
+function:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Data Generation</strong>: The function generates a
+dataset called <code>dat</code> with a specified number of observations
+(<code>N</code>). The dataset includes two factors: <code>road</code>
+and <code>weather</code>, both with 3 factors. They are generated a bit
+differently in order to mix up the combinations but essentially this
+generation allows for a balanced number of factor combinations in the
+dataset. The data is created using the <code>gl()</code>
+function.</p></li>
+<li><p><strong>Outcome Generation</strong>: The function predicts the
+outcome variable, <code>accidents</code>, using the
+<code>predict()</code> function. It utilizes the previously fitted GLM
+model called <code>mod.original</code>. The predicted means
+(<code>a</code>) are calculated by applying the model to the
+<code>dat</code> dataset with the specified type of prediction set to
+“response”. Next, the observed <code>accidents</code> counts are
+generated by sampling from a Poisson distribution using the
+<code>rpois()</code> function. The size of the sample (<code>N</code>)
+and the mean parameter (<code>a</code>) are specified to determine the
+count values. The sampling is necessary in order to introduce some noise
+into the data, otherwise it would not be realistic and we would only fit
+the original model over and over again.</p></li>
+<li><p><strong>Model fitting</strong>: The function fits a Poisson GLM
+model, named <code>mod</code>, to the <code>dat</code> dataset. The
+model includes <code>road</code> and <code>weather</code> as predictors.
+The family is specified as Poisson.</p></li>
+<li><p><strong>Hypothesis Test</strong>: Finally, the function examines
+the p-value associated with the coefficient of the third level of the
+<code>road</code> factor (<code>road3</code>) from the summary of the
+<code>mod</code> model. If the p-value is less than 0.05, the function
+returns a logical value indicating that there is a statistically
+significant difference in accidents between the third level of the
+<code>road</code> factor and the other levels.</p></li>
+</ol>
+<p>A similar function for a poisson model is implemented in the example
+simulation function of mlpwr and can be seen <a href="https://cran.r-project.org/package=mlpwr/vignettes/simulation_functions.html">here</a>.</p>
+</div>
+<div id="power-analysis-1" class="section level3">
+<h3>Power Analysis</h3>
+<p>The previous section showed how we can perform a data simulation with
+a subsequent hypothesis test. Now we perform a power simulation with
+<code>mlpwr</code>.</p>
+<p>A power simulation can be done using the
+<code>find.design</code>function. For our purpose we submit 4 parameters
+to it:</p>
+<ol style="list-style-type: decimal">
+<li><strong>simfun</strong>: a simulation function, that generates the
+data and does the hypothesis test, outputting a logical value. We use
+the function described before.</li>
+<li><strong>boundaries</strong>: the boundaries of the design space that
+are searched. This should be set to a large enough interval in order to
+explore the design space sufficiently.</li>
+<li><strong>power</strong>: the desired power level. We set 0.8 as the
+desired power level.</li>
+<li><strong>evaluations</strong> (optional): this optional parameter
+makes the computation faster by limiting the number of reevaluations.
+But this also makes the computation less stable and precise.</li>
+</ol>
+<p><strong>Note</strong>: additional specifications are possible (see <a href="https://cran.r-project.org/package=mlpwr/mlpwr.pdf">documentation</a>)
+but not necessary. For most parameters like the choice of surrogate
+function the default values should already be good choices.</p>
+<p>The <code>find.design</code> function needs to reiterate a data
+simulation multiple times. For this purpose it expects a data generating
+function (DGF) as its main input. The DGF takes the design parameters
+(here <code>N</code>) as input and must output a logical value of
+whether the hypothesis test was TRUE or FALSE.</p>
+<p>With the specified parameters we can perform the power analysis. We
+set a random seed for reproducibility reasons.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">111</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">find.design</span>(<span class="at">simfun =</span> simfun_glm1, <span class="at">boundaries =</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">1000</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                   <span class="at">power =</span> .<span class="dv">8</span>, <span class="at">evaluations =</span> <span class="dv">2000</span>)</span></code></pre></div>
+<p>Now we can summarize the results using the <code>summary</code>
+command.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">summary</span>(res)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## find.design(simfun = simfun_glm1, boundaries = c(10, 1000), power = 0.8, 
+##     evaluations = 2000)
+## 
+## Design: N = 220
+## 
+## Power: 0.80039,  SE: 0.01043
+## Evaluations: 2000,  Time: 8.9,  Updates: 16
+## Surrogate: Logistic regression</code></pre>
+<p>As we can see the calculated sample size for the desired power of 0.8
+is . The estimated power for this sample size is 0.80039 with a standard
+error of 0.01043. The summary additionally reports the number of
+simulation function evaluations, the time until termination in seconds,
+and the number of surrogate model updates. See <a href="https://doi.org/10.1037/met0000611">Zimmer &amp; Debelak
+(2023)</a> for more details. We can also plot our power simulation and
+look at the calculated function using the <code>plot</code>
+function.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">plot</span>(res)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>Confidence Intervals (gray) are printed in addition to the estimated
+power curve (black), so we can get a feel for how the design parameter
+(here sample size <code>N</code>) influence the power level and also
+where the prediction is more or less uncertain. The black dots show us
+the simulated data. This concludes our power analysis.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
